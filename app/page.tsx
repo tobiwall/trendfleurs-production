@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import TrustBar from "@/components/sections/TrustBar";
 import PinnedServices from "@/components/sections/PinnedServices";
+import StorySection from "@/components/sections/StorySection";
+import ServiceWorlds from "@/components/sections/ServiceWorlds";
+import ProjectGallery from "@/components/sections/ProjectGallery";
 import LocalSEO from "@/components/sections/LocalSEO";
 import CtaBanner from "@/components/sections/CtaBanner";
 
@@ -18,6 +21,9 @@ export default function HomePage() {
       <Hero />
       <TrustBar />
       <PinnedServices />
+      <StorySection />
+      <ServiceWorlds />
+      <ProjectGallery />
       <LocalSEO />
       <CtaBanner />
     </>

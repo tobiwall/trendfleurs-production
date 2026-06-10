@@ -145,10 +145,12 @@
 ───────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: auto; /* Lenis handles smooth scroll */ }
 
 body {
   margin: 0;
+  /* Global 100vw lock — nothing bleeds past the viewport */
+  overflow-x: hidden;
   background: var(--cream);
   color: var(--ink-900);
   font-family: var(--font-sans);
