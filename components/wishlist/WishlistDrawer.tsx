@@ -8,7 +8,7 @@ import { useStore } from "@/lib/store";
 import { imgSrc } from "@/app/components/trendfleurs/data";
 
 /* ─── WhatsApp number — set NEXT_PUBLIC_WHATSAPP_NUMBER in .env.local ─── */
-const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "4915100000000";
+const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "491787825994";
 
 interface FormState {
   name: string;
