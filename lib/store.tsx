@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useCallback, ReactNode, useRef } f
 
 /* ─── Types ─── */
 export interface CartItem { id: string; name: string; price: number; seed: number; qty: number; }
-export interface WishItem { id: string; name: string; price: string; unit?: string; seed: number; qty: number; }
+export interface WishItem { id: string; name: string; price: string; unit?: string; seed: number; imageUrl?: string; qty: number; }
 
 interface StoreValue {
   cart: CartItem[];

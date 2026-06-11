@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import DecorCatalogClient from "./DecorCatalogClient";
+import { getVerleihProducts } from "@/lib/shopify";
 
 export const metadata: Metadata = {
   title: "Dekoverleih — Hoops, Pampas & Audio Gästetelefon",
@@ -70,13 +71,14 @@ const schemas = [
   },
 ];
 
-export default function DecorPage() {
+export default async function DecorPage() {
+  const products = await getVerleihProducts();
   return (
     <>
       {schemas.map((s, i) => (
         <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
       ))}
-      <DecorCatalogClient />
+      <DecorCatalogClient products={products} />
     </>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Check, Info, MapPin, Clock, Package } from "lucide-react";
 import { DECOR, imgSrc } from "@/app/components/trendfleurs/data";
+import { getVerleihProducts, getProductByHandle, shopifyImageSrc } from "@/lib/shopify";
 import WishlistButton from "./WishlistButton";
 
 /* ─────────────────────────────────────────────
@@ -118,7 +119,15 @@ const ITEM_CONTENT: Record<string, {
    Static params
 ────────────────────────────────────────────── */
 export async function generateStaticParams() {
-  return DECOR.map((item) => ({ slug: item.id }));
+  let shopifySlugs: string[] = [];
+  try {
+    const sp = await getVerleihProducts();
+    shopifySlugs = sp.map(p => p.id);
+  } catch { /* Shopify not configured — static slugs only */ }
+
+  const staticSlugs = DECOR.map(item => item.id);
+  const all = [...new Set([...staticSlugs, ...shopifySlugs])];
+  return all.map(slug => ({ slug }));
 }
 
 /* ─────────────────────────────────────────────
@@ -129,19 +138,38 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   const item = DECOR.find((d) => d.id === slug);
-  if (!item) return { title: "Nicht gefunden" };
-  const content = ITEM_CONTENT[item.id];
-  return {
-    title: `${item.name} · Dekoverleih — a_trendfleurs by Anni`,
-    description: `${item.name} mieten: ${item.price}${item.unit}. ${content?.desc.slice(0, 140)}…`,
-    keywords: [item.name, item.cat, "Dekoverleih", "Hochzeit", "Westerwald", "a_trendfleurs"],
-    alternates: { canonical: `https://www.trendfleurs.de/dekoverleih/${item.id}` },
-    openGraph: {
-      title: `${item.name} mieten — a_trendfleurs Dekoverleih`,
-      description: `${item.price}${item.unit}. ${content?.desc.slice(0, 100)}`,
-      url: `https://www.trendfleurs.de/dekoverleih/${item.id}`,
-    },
-  };
+
+  if (item) {
+    const content = ITEM_CONTENT[item.id];
+    return {
+      title: `${item.name} · Dekoverleih — a_trendfleurs by Anni`,
+      description: `${item.name} mieten: ${item.price}${item.unit}. ${content?.desc.slice(0, 140)}…`,
+      keywords: [item.name, item.cat, "Dekoverleih", "Hochzeit", "Westerwald", "a_trendfleurs"],
+      alternates: { canonical: `https://www.trendfleurs.de/dekoverleih/${item.id}` },
+      openGraph: {
+        title: `${item.name} mieten — a_trendfleurs Dekoverleih`,
+        description: `${item.price}${item.unit}. ${content?.desc.slice(0, 100)}`,
+        url: `https://www.trendfleurs.de/dekoverleih/${item.id}`,
+      },
+    };
+  }
+
+  const sp = await getProductByHandle(slug).catch(() => null);
+  if (sp) {
+    return {
+      title: `${sp.name} · Dekoverleih — a_trendfleurs by Anni`,
+      description: `${sp.name} mieten: ${sp.price} ${sp.unit}. ${sp.description.slice(0, 140)}`,
+      keywords: [sp.name, sp.cat, "Dekoverleih", "Hochzeit", "Westerwald", "a_trendfleurs"],
+      alternates: { canonical: `https://www.trendfleurs.de/dekoverleih/${sp.id}` },
+      openGraph: {
+        title: `${sp.name} mieten — a_trendfleurs Dekoverleih`,
+        description: `${sp.price} ${sp.unit}. ${sp.description.slice(0, 100)}`,
+        url: `https://www.trendfleurs.de/dekoverleih/${sp.id}`,
+      },
+    };
+  }
+
+  return { title: "Nicht gefunden" };
 }
 
 /* ─────────────────────────────────────────────
@@ -152,10 +180,131 @@ export default async function DecorDetailPage(
 ) {
   const { slug } = await params;
   const item = DECOR.find((d) => d.id === slug);
+
+  // Shopify product (for image, price, variants — with or without a DECOR entry)
+  const shopifyProduct = await getProductByHandle(slug).catch(() => null);
+
+  // Pure Shopify product with no DECOR entry → minimal layout
+  if (!item && shopifyProduct) {
+    const imgUrl = shopifyProduct.imageUrl
+      ? shopifyImageSrc(shopifyProduct.imageUrl, 900)
+      : null;
+
+    return (
+      <main>
+        <section style={{ background: "var(--cream)", paddingTop: "clamp(40px,7vw,80px)", paddingBottom: "clamp(48px,8vw,96px)" }}>
+          <div className="tf-inner">
+            <nav aria-label="Breadcrumb" style={{ marginBottom: "28px" }}>
+              <ol style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                <li><Link href="/" style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-400)" }}>Home</Link></li>
+                <li><span style={{ color: "var(--ink-300)", fontSize: "11px" }}>/</span></li>
+                <li><Link href="/dekoverleih" style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-400)" }}>Dekoverleih</Link></li>
+                <li><span style={{ color: "var(--ink-300)", fontSize: "11px" }}>/</span></li>
+                <li><span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--rust-500)" }}>{shopifyProduct.name}</span></li>
+              </ol>
+            </nav>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "clamp(32px,5vw,64px)" }} className="decor-product-grid">
+              {imgUrl && (
+                <div style={{
+                  position: "relative", borderRadius: "var(--r-xl)", overflow: "hidden",
+                  background: "var(--paper-100)",
+                  height: "clamp(280px, 45vw, 500px)",
+                }}>
+                  <Image src={imgUrl} alt={shopifyProduct.name} fill sizes="(max-width: 768px) 100vw, 50vw" style={{ objectFit: "contain" }} priority />
+                </div>
+              )}
+
+              <div>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-kicker)", letterSpacing: "var(--track-kicker)", textTransform: "uppercase", color: "var(--rust-600)" }}>
+                  {shopifyProduct.cat}
+                </p>
+                <h1 style={{ fontFamily: "var(--font-serif)", fontWeight: 400, marginTop: "10px", fontSize: "var(--fs-h1)", lineHeight: "var(--lh-head)", color: "var(--ink-900)" }}>
+                  {shopifyProduct.name}
+                </h1>
+
+                <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "20px" }}>
+                  <span style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(1.6rem,3vw,2.2rem)", color: "var(--rust-500)" }}>{shopifyProduct.price}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-400)" }}>{shopifyProduct.unit}</span>
+                </div>
+
+                {shopifyProduct.description && (
+                  <p style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "var(--fs-body)", lineHeight: "var(--lh-body)", color: "var(--ink-700)", marginTop: "18px", maxWidth: "52ch" }}>
+                    {shopifyProduct.description}
+                  </p>
+                )}
+
+                <div style={{ display: "flex", gap: "12px", marginTop: "28px", flexWrap: "wrap" }}>
+                  <Link href={`/anfrage?item=${shopifyProduct.id}&name=${encodeURIComponent(shopifyProduct.name)}`} style={{
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                    fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 500,
+                    letterSpacing: "0.14em", textTransform: "uppercase",
+                    background: "var(--rust-500)", color: "var(--on-rust)",
+                    padding: "13px 26px", borderRadius: "var(--r-pill)", minHeight: "48px",
+                  }}>
+                    Jetzt anfragen <ArrowRight size={15} strokeWidth={1.8} />
+                  </Link>
+                  <WishlistButton
+                    id={shopifyProduct.id}
+                    name={shopifyProduct.name}
+                    price={shopifyProduct.price}
+                    unit={shopifyProduct.unit}
+                    seed={shopifyProduct.seed}
+                    imageUrl={shopifyProduct.imageUrl ?? undefined}
+                    variants={shopifyProduct.variants}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section style={{ background: "var(--charcoal)", padding: "clamp(64px,9vw,104px) 0" }}>
+          <div style={{ maxWidth: "560px", margin: "0 auto", padding: "0 var(--gutter)", textAlign: "center" }}>
+            <h2 style={{ color: "var(--on-charcoal)", fontFamily: "var(--font-serif)", fontWeight: 400, fontSize: "var(--fs-h2)" }}>
+              {shopifyProduct.name} für dein Event
+            </h2>
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "24px", flexWrap: "wrap" }}>
+              <Link href={`/anfrage?item=${shopifyProduct.id}&name=${encodeURIComponent(shopifyProduct.name)}`} style={{
+                display: "inline-flex", alignItems: "center", gap: "10px",
+                fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 500,
+                letterSpacing: "0.14em", textTransform: "uppercase",
+                background: "var(--rust-500)", color: "var(--on-rust)",
+                padding: "14px 30px", borderRadius: "var(--r-pill)", minHeight: "48px",
+              }}>
+                Anfrage senden <ArrowRight size={15} strokeWidth={1.8} />
+              </Link>
+              <Link href="/dekoverleih" style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 500,
+                letterSpacing: "0.14em", textTransform: "uppercase",
+                color: "rgba(244,239,231,.8)", padding: "13px 22px",
+                borderRadius: "var(--r-pill)", border: "1px solid rgba(244,239,231,.22)", minHeight: "48px",
+              }}>
+                Alle Artikel
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <style>{`
+          @media (min-width: 768px) {
+            .decor-product-grid { grid-template-columns: 1fr 1fr !important; align-items: start; }
+          }
+        `}</style>
+      </main>
+    );
+  }
+
   if (!item) notFound();
 
   const content = ITEM_CONTENT[item.id];
   const related = DECOR.filter((d) => d.id !== item.id && (d.cat === item.cat || d.seed !== item.seed)).slice(0, 3);
+
+  // Use Shopify image if available, otherwise Unsplash fallback
+  const heroImgSrc = shopifyProduct?.imageUrl
+    ? shopifyImageSrc(shopifyProduct.imageUrl, 900)
+    : imgSrc(item.seed, 900);
 
   const schemaProduct = {
     "@context": "https://schema.org",
@@ -178,7 +327,7 @@ export default async function DecorDetailPage(
       availability: "https://schema.org/InStock",
     },
     brand: { "@type": "Brand", name: "a_trendfleurs by Anni" },
-    image: imgSrc(item.seed, 800),
+    image: shopifyProduct?.imageUrl ? shopifyImageSrc(shopifyProduct.imageUrl, 800) : imgSrc(item.seed, 800),
   };
 
   const schemaBreadcrumb = {
@@ -226,13 +375,17 @@ export default async function DecorDetailPage(
               gap: "clamp(32px,5vw,64px)",
             }} className="decor-product-grid">
               {/* Image */}
-              <div style={{ position: "relative", borderRadius: "var(--r-xl)", overflow: "hidden", aspectRatio: "4/3" }}>
+              <div style={{
+                position: "relative", borderRadius: "var(--r-xl)", overflow: "hidden",
+                background: "var(--paper-100)",
+                height: "clamp(280px, 45vw, 500px)",
+              }}>
                 <Image
-                  src={imgSrc(item.seed, 900)}
+                  src={heroImgSrc}
                   alt={item.name}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: "cover" }}
+                  style={{ objectFit: "contain" }}
                   priority
                 />
                 {item.badge && (
@@ -306,9 +459,11 @@ export default async function DecorDetailPage(
                   <WishlistButton
                     id={item.id}
                     name={item.name}
-                    price={item.price}
+                    price={shopifyProduct?.price ?? item.price}
                     unit={item.unit}
                     seed={item.seed}
+                    imageUrl={shopifyProduct?.imageUrl ?? undefined}
+                    variants={shopifyProduct?.variants}
                   />
                 </div>
 

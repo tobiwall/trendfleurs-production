@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ShopCatalogClient from "./ShopCatalogClient";
+import { getShopProducts } from "@/lib/shopify";
 
 export const metadata: Metadata = {
   title: "Shop — Personalisierte Hochzeitsdeko kaufen",
@@ -49,13 +50,14 @@ const schemas = [
   },
 ];
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const products = await getShopProducts();
   return (
     <>
       {schemas.map((s, i) => (
         <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
       ))}
-      <ShopCatalogClient />
+      <ShopCatalogClient products={products} />
     </>
   );
 }

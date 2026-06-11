@@ -5,6 +5,7 @@ import PinnedServices from "@/components/sections/PinnedServices";
 import StorySection from "@/components/sections/StorySection";
 import ServiceWorlds from "@/components/sections/ServiceWorlds";
 import ProjectGallery from "@/components/sections/ProjectGallery";
+import GoogleReviews from "@/components/sections/GoogleReviews";
 import LocalSEO from "@/components/sections/LocalSEO";
 import CtaBanner from "@/components/sections/CtaBanner";
 
@@ -24,6 +25,7 @@ export default function HomePage() {
       <StorySection />
       <ServiceWorlds />
       <ProjectGallery />
+      <GoogleReviews />
       <LocalSEO />
       <CtaBanner />
     </>

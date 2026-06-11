@@ -297,7 +297,7 @@ export default function WishlistDrawer() {
                     background: "var(--paper-200)",
                   }}>
                     <Image
-                      src={imgSrc(item.seed, 128)}
+                      src={item.imageUrl ?? imgSrc(item.seed, 128)}
                       alt={item.name}
                       fill
                       sizes="64px"
