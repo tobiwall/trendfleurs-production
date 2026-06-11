@@ -281,7 +281,7 @@ export default function StorySection() {
           >
             <div ref={imgRef} style={{ position: "absolute", inset: "-10% 0", willChange: "transform" }}>
               <Image
-                src="https://images.unsplash.com/photo-1490750967868-88df5691cc81?auto=format&fit=crop&w=900&q=80"
+                src="/anni3.webp"
                 alt="Anni bei der Arbeit — florale Gestaltung für eine Hochzeit"
                 fill
                 sizes="(max-width: 767px) 100vw, 50vw"

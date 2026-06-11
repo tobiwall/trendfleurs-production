@@ -158,32 +158,33 @@ export default function ServiceWorlds() {
           transformPerspective: 900, transformOrigin: "50% 100%",
         });
 
-        /* Pin the deck section; create 2×100vh of scroll space for 2 swaps */
+        /* Pin the deck; 1×100vh scroll space — snaps immediately between card states */
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: deckWrap,
             start: "top top",
-            end: "+=200%",
+            end: "+=100%",
             pin: true,
-            scrub: 0.65,
+            scrub: 0.9,
             anticipatePin: 1,
+            snap: { snapTo: 1 / 2, duration: 0.5, ease: "power3.inOut" },
           },
         });
 
-        /* ── Phase 1 (0→0.5): card 0 flies off, card 1 rises to front ── */
+        /* ── Phase 1 (0→0.5): card 0 flies upper-left, card 1 rises to front ── */
         tl.to(c0.current, {
-          y: "-118%", x: "-22%",
-          rotateY: -24, rotateZ: -9,
+          y: "-40%", x: "-120%",
+          rotateZ: -15,
           opacity: 0,
           duration: 0.42, ease: "power4.out",
         }, 0);
         tl.to(c1.current, { y: 0, scale: 1, duration: 0.42, ease: "power2.out" }, 0);
         tl.to(c2.current, { y: 16, scale: 0.952, duration: 0.42, ease: "power2.out" }, 0);
 
-        /* ── Phase 2 (0.5→1): card 1 flies off, card 2 rises to front ── */
+        /* ── Phase 2 (0.5→1): card 1 flies lower-right, card 2 rises to front ── */
         tl.to(c1.current, {
-          y: "-118%", x: "-22%",
-          rotateY: -24, rotateZ: -9,
+          y: "40%", x: "120%",
+          rotateZ: 15,
           opacity: 0,
           duration: 0.42, ease: "power4.out",
         }, 0.5);

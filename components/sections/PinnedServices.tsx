@@ -157,7 +157,7 @@ export default function PinnedServices() {
       ════════════════════════════════════════════════ */
       mm.add("(min-width: 768px)", () => {
         const outer = outerRef.current!;
-        outer.style.height = `${window.innerHeight * 4}px`;
+        outer.style.height = `${window.innerHeight * 3}px`;
 
         gsap.set(db1Ref.current, { zIndex: 3, opacity: 1,    x: 0,  y: 0,  scale: 1,    filter: "blur(0px)",  pointerEvents: "auto" });
         gsap.set(db2Ref.current, { zIndex: 2, opacity: 0.22, x: 16, y: 12, scale: 0.95, filter: "blur(3px)",  pointerEvents: "none" });
@@ -179,7 +179,8 @@ export default function PinnedServices() {
             trigger: outer,
             start: "top top",
             end: "bottom bottom",
-            scrub: 1.2,
+            scrub: 1.0,
+            snap: { snapTo: 1 / 2, duration: 0.5, ease: "power3.inOut" },
             invalidateOnRefresh: true,
           },
         });
@@ -434,12 +435,12 @@ export default function PinnedServices() {
             {/* ── Right: Block deck ── */}
             <div style={{
               display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "0 var(--gutter) 0 clamp(20px,3vw,44px)",
+              padding: "clamp(40px,7vh,88px) clamp(24px,4vw,56px)",
               position: "relative",
             }}>
               <div style={{
-                width: "100%", maxWidth: "500px",
-                minHeight: "390px", position: "relative", overflow: "visible",
+                width: "100%", maxWidth: "600px",
+                minHeight: "440px", position: "relative", overflow: "visible",
               }}>
                 <div style={{
                   position: "absolute", top: "-52px", left: 0,

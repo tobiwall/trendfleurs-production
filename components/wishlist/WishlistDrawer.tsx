@@ -95,7 +95,7 @@ export default function WishlistDrawer() {
   }, [closeWishDrawer]);
 
   /* ── Email submit ── */
-  const handleEmailSubmit = useCallback(async (e: React.FormEvent) => {
+  const handleEmailSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.email) return;
     setStatus("loading");
