@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import WishlistDrawer from "@/components/wishlist/WishlistDrawer";
+import WishlistBar from "@/components/wishlist/WishlistBar";
 
 function SmoothScroll() {
   useEffect(() => {
@@ -36,6 +38,9 @@ export default function Providers({ children }: { children: ReactNode }) {
     <StoreProvider>
       <SmoothScroll />
       {children}
+      {/* Global wishlist UI — lives outside page flow */}
+      <WishlistBar />
+      <WishlistDrawer />
     </StoreProvider>
   );
 }

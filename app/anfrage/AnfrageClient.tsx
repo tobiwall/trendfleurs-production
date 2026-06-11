@@ -197,7 +197,7 @@ export default function AnfrageClient() {
                   <span style={{ fontFamily: "var(--font-script)", fontSize: "1.6rem", color: "var(--gold-400)" }}>Anni direkt</span>
                   <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginTop: "18px" }}>
                     {[
-                      { icon: <Mail size={15} />, label: "E-Mail", value: "info@trendfleurs.de" },
+                      { icon: <Mail size={15} />, label: "E-Mail", value: "info@wallwideweb.de" },
                       { icon: <Clock size={15} />, label: "Antwortzeit", value: "Innerhalb von 48 h" },
                       { icon: <MapPin size={15} />, label: "Einsatzgebiet", value: "Westerwald · Köln · Frankfurt · NRW" },
                     ].map((row) => (

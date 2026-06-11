@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
+import { gsap } from 'gsap';
 import { Kicker, ImagePH, Reveal, Icon } from './primitives';
 import { DECOR, DECOR_CATS, SHOP, SHOP_CATS, imgSrc } from './data';
 import type { DecorItem, ShopItem, Page } from './data';
@@ -37,6 +38,20 @@ interface DecorTileProps {
 export function DecorTile({ d, onClick, onWish }: DecorTileProps) {
   const [hover, setHover] = useState(false);
   const [wished, setWished] = useState(false);
+  const heartRef = useRef<HTMLButtonElement>(null);
+
+  function handleWish(e: React.MouseEvent) {
+    e.stopPropagation();
+    setWished(true);
+    onWish?.();
+    /* GSAP heart bounce */
+    if (heartRef.current) {
+      gsap.timeline()
+        .to(heartRef.current, { scale: 1.45, duration: 0.13, ease: 'power2.out' })
+        .to(heartRef.current, { scale: 1,    duration: 0.38, ease: 'elastic.out(1.1, 0.4)' });
+    }
+  }
+
   return (
     <article>
       <div
@@ -67,8 +82,9 @@ export function DecorTile({ d, onClick, onWish }: DecorTileProps) {
         />
         {d.badge && <div style={{ position: 'absolute', top: 14, left: 14 }} aria-label={d.badge}><Badge>{d.badge}</Badge></div>}
         <button
+          ref={heartRef}
           aria-label={wished ? `${d.name} ist auf dem Wunschzettel` : `${d.name} auf den Wunschzettel setzen`}
-          onClick={(e) => { e.stopPropagation(); setWished(true); onWish?.(); }}
+          onClick={handleWish}
           style={{
             position: 'absolute', bottom: 14, right: 14, width: 42, height: 42,
             borderRadius: '999px', border: 'none', cursor: 'pointer',
@@ -78,7 +94,8 @@ export function DecorTile({ d, onClick, onWish }: DecorTileProps) {
             boxShadow: 'var(--shadow-sm)',
             opacity: hover || wished ? 1 : 0,
             transform: hover || wished ? 'translateY(0)' : 'translateY(8px)',
-            transition: 'all var(--dur-base) var(--ease-organic)',
+            transition: 'background var(--dur-base), color var(--dur-base), opacity var(--dur-base) var(--ease-organic)',
+            willChange: 'transform',
           }}
         >
           <Icon name="heart" size={18} />

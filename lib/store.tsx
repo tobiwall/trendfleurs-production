@@ -12,10 +12,15 @@ interface StoreValue {
   cartCount: number;
   wishCount: number;
   toast: string | null;
+  wishDrawerOpen: boolean;
   addToCart: (item: Omit<CartItem, "qty">, qty?: number) => void;
   addToWish: (item: Omit<WishItem, "qty">, qty?: number) => void;
   removeFromCart: (i: number) => void;
   removeFromWish: (i: number) => void;
+  removeFromWishById: (id: string) => void;
+  updateWishQty: (id: string, delta: number) => void;
+  openWishDrawer: () => void;
+  closeWishDrawer: () => void;
 }
 
 const Ctx = createContext<StoreValue | null>(null);
@@ -24,6 +29,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<WishItem[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [wishDrawerOpen, setWishDrawerOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const flash = (msg: string) => {
@@ -52,13 +58,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const removeFromCart = useCallback((i: number) => setCart((c) => c.filter((_, idx) => idx !== i)), []);
   const removeFromWish = useCallback((i: number) => setWishlist((w) => w.filter((_, idx) => idx !== i)), []);
 
+  const removeFromWishById = useCallback((id: string) =>
+    setWishlist((w) => w.filter((x) => x.id !== id)), []);
+
+  const updateWishQty = useCallback((id: string, delta: number) =>
+    setWishlist((w) =>
+      w.map((x) => x.id === id ? { ...x, qty: Math.max(1, x.qty + delta) } : x)
+    ), []);
+
+  const openWishDrawer  = useCallback(() => setWishDrawerOpen(true),  []);
+  const closeWishDrawer = useCallback(() => setWishDrawerOpen(false), []);
+
   return (
     <Ctx.Provider value={{
       cart, wishlist,
       cartCount: cart.reduce((s, x) => s + x.qty, 0),
-      wishCount: wishlist.length,
+      wishCount: wishlist.reduce((s, x) => s + x.qty, 0),
       toast,
-      addToCart, addToWish, removeFromCart, removeFromWish,
+      wishDrawerOpen,
+      addToCart, addToWish,
+      removeFromCart, removeFromWish, removeFromWishById,
+      updateWishQty,
+      openWishDrawer, closeWishDrawer,
     }}>
       {children}
     </Ctx.Provider>
