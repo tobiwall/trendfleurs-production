@@ -6,6 +6,7 @@ import { ArrowRight, Check, Info, MapPin, Clock, Package } from "lucide-react";
 import { DECOR, imgSrc } from "@/app/components/trendfleurs/data";
 import { getVerleihProducts, getProductByHandle, shopifyImageSrc } from "@/lib/shopify";
 import WishlistButton from "./WishlistButton";
+import ImageGallery from "@/components/ImageGallery";
 
 /* ─────────────────────────────────────────────
    Per-item rich content
@@ -186,10 +187,6 @@ export default async function DecorDetailPage(
 
   // Pure Shopify product with no DECOR entry → minimal layout
   if (!item && shopifyProduct) {
-    const imgUrl = shopifyProduct.imageUrl
-      ? shopifyImageSrc(shopifyProduct.imageUrl, 900)
-      : null;
-
     return (
       <main>
         <section style={{ background: "var(--cream)", paddingTop: "clamp(40px,7vw,80px)", paddingBottom: "clamp(48px,8vw,96px)" }}>
@@ -205,15 +202,11 @@ export default async function DecorDetailPage(
             </nav>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "clamp(32px,5vw,64px)" }} className="decor-product-grid">
-              {imgUrl && (
-                <div style={{
-                  position: "relative", borderRadius: "var(--r-xl)", overflow: "hidden",
-                  background: "var(--paper-100)",
-                  height: "clamp(280px, 45vw, 500px)",
-                }}>
-                  <Image src={imgUrl} alt={shopifyProduct.name} fill sizes="(max-width: 768px) 100vw, 50vw" style={{ objectFit: "contain" }} priority />
-                </div>
-              )}
+              <ImageGallery
+                images={shopifyProduct.images}
+                alt={shopifyProduct.name}
+                priority
+              />
 
               <div>
                 <p style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-kicker)", letterSpacing: "var(--track-kicker)", textTransform: "uppercase", color: "var(--rust-600)" }}>
@@ -374,32 +367,14 @@ export default async function DecorDetailPage(
               gridTemplateColumns: "1fr",
               gap: "clamp(32px,5vw,64px)",
             }} className="decor-product-grid">
-              {/* Image */}
-              <div style={{
-                position: "relative", borderRadius: "var(--r-xl)", overflow: "hidden",
-                background: "var(--paper-100)",
-                height: "clamp(280px, 45vw, 500px)",
-              }}>
-                <Image
-                  src={heroImgSrc}
-                  alt={item.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: "contain" }}
-                  priority
-                />
-                {item.badge && (
-                  <span style={{
-                    position: "absolute", top: 16, left: 16,
-                    fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.18em",
-                    textTransform: "uppercase", padding: "5px 12px",
-                    background: "var(--rust-500)", color: "var(--on-rust)",
-                    borderRadius: "var(--r-pill)",
-                  }}>
-                    {item.badge}
-                  </span>
-                )}
-              </div>
+              {/* Image gallery */}
+              <ImageGallery
+                images={shopifyProduct?.images ?? []}
+                fallbackSrc={heroImgSrc}
+                alt={item.name}
+                badge={item.badge ?? undefined}
+                priority
+              />
 
               {/* Info */}
               <div>

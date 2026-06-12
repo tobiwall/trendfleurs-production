@@ -95,7 +95,7 @@ const PRODUCTS_QUERY = `
           description
           tags
           priceRange { minVariantPrice { amount currencyCode } }
-          images(first: 5) {
+          images(first: 10) {
             edges { node { url altText width height } }
           }
           variants(first: 20) {

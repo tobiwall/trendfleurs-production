@@ -3,8 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ShoppingBag, Check, Star } from "lucide-react";
-import { SHOP, SHOP_CATS, imgSrc } from "@/app/components/trendfleurs/data";
+import { ArrowRight, ShoppingBag, Check } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { NormalizedProduct } from "@/lib/shopify";
 
@@ -13,39 +12,30 @@ function shopifyImgSrc(url: string, w: number): string {
   catch { return url; }
 }
 
-interface Props {
-  products: NormalizedProduct[];
-}
-
-export default function ShopCatalogClient({ products }: Props) {
+export default function ShopCatalogClient({ products }: { products: NormalizedProduct[] }) {
   const [activeCat, setActiveCat] = useState("Alle");
-  const [addedId, setAddedId] = useState<string | null>(null);
+  const [addedId, setAddedId]     = useState<string | null>(null);
   const { addToCart } = useStore();
 
-  // Use Shopify products if available, otherwise fall back to static SHOP
-  const useShopify = products.length > 0;
-
   const cats = useMemo(() => {
-    if (!useShopify) return SHOP_CATS;
-    const s = new Set<string>(['Alle']);
+    const s = new Set<string>(["Alle"]);
     products.forEach(p => s.add(p.cat));
     return Array.from(s);
-  }, [products, useShopify]);
+  }, [products]);
 
-  const filtered = useMemo(() => {
-    if (!useShopify) return activeCat === "Alle" ? SHOP : SHOP.filter(p => p.cat === activeCat);
-    return activeCat === "Alle" ? products : products.filter(p => p.cat === activeCat);
-  }, [activeCat, products, useShopify]);
+  const filtered = useMemo(
+    () => activeCat === "Alle" ? products : products.filter(p => p.cat === activeCat),
+    [activeCat, products]
+  );
 
-  function handleAddShopify(product: NormalizedProduct) {
-    addToCart({ id: product.id, name: product.name, price: product.priceRaw, seed: product.seed });
+  function handleQuickAdd(product: NormalizedProduct) {
+    // Quick-add uses the first available variant; variant selection is on the detail page
+    const real = product.variants.filter(v => v.title !== "Default Title");
+    const v    = real[0] ?? product.variants[0];
+    const id   = v ? `${product.id}::${v.id}` : product.id;
+    const price = v ? (parseFloat(v.price.amount) || 0) : product.priceRaw;
+    addToCart({ id, name: product.name, price, seed: product.seed });
     setAddedId(product.id);
-    setTimeout(() => setAddedId(null), 1800);
-  }
-
-  function handleAdd(item: typeof SHOP[0]) {
-    addToCart({ id: item.id, name: item.name, price: item.price, seed: item.seed });
-    setAddedId(item.id);
     setTimeout(() => setAddedId(null), 1800);
   }
 
@@ -74,23 +64,22 @@ export default function ShopCatalogClient({ products }: Props) {
                 Willkommensschilder, Tischkarten, Kerzen & Gästebücher — handgemacht und auf Wunsch graviert oder personalisiert.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "18px" }}>
-                {["Versand in 3–5 Tagen", "Personalisierbar", "Handgemacht"].map((tag) => (
+                {["Versand in 3–5 Tagen", "Personalisierbar", "Handgemacht"].map(tag => (
                   <span key={tag} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-500)" }}>
                     <Check size={12} strokeWidth={2.5} color="var(--rust-400)" /> {tag}
                   </span>
                 ))}
               </div>
             </div>
+
+            {/* Hero thumbnails from live Shopify products */}
             <div style={{ display: "flex", gap: "8px" }}>
-              {(useShopify ? products.slice(0, 3) : SHOP_CATS.slice(1, 4).map(cat => SHOP.find(p => p.cat === cat))).map((entry, idx) => {
-                if (!entry) return null;
-                const src = useShopify
-                  ? ((entry as NormalizedProduct).imageUrl ? shopifyImgSrc((entry as NormalizedProduct).imageUrl!, 300) : imgSrc(idx, 300))
-                  : imgSrc((entry as typeof SHOP[0]).seed, 300);
+              {products.slice(0, 3).map((p) => {
+                const src = p.imageUrl ? shopifyImgSrc(p.imageUrl, 300) : null;
                 return (
-                  <div key={idx} style={{ flex: 1, position: "relative", aspectRatio: "2/3", borderRadius: "var(--r-lg)", overflow: "hidden", minHeight: "120px" }}>
-                    <Image src={src} alt={useShopify ? (entry as NormalizedProduct).name : (entry as typeof SHOP[0]).cat} fill sizes="120px" style={{ objectFit: "cover" }} />
-                  </div>
+                  <Link key={p.id} href={`/shop/${p.id}`} style={{ flex: 1, position: "relative", aspectRatio: "2/3", borderRadius: "var(--r-lg)", overflow: "hidden", minHeight: "120px", background: "var(--paper-100)" }}>
+                    {src && <Image src={src} alt={p.name} fill sizes="120px" style={{ objectFit: "contain" }} />}
+                  </Link>
                 );
               })}
             </div>
@@ -103,7 +92,7 @@ export default function ShopCatalogClient({ products }: Props) {
         <div className="tf-inner">
           {/* Filter chips */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "clamp(24px,4vw,40px)" }}>
-            {cats.map((cat) => (
+            {cats.map(cat => (
               <button key={cat} onClick={() => setActiveCat(cat)} style={{
                 fontFamily: "var(--font-sans)", fontSize: "0.88rem",
                 padding: "9px 18px", borderRadius: "var(--r-pill)", cursor: "pointer",
@@ -118,19 +107,27 @@ export default function ShopCatalogClient({ products }: Props) {
           </div>
 
           {/* Product grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 240px), 1fr))", gap: "20px" }}>
-            {useShopify
-              ? (filtered as NormalizedProduct[]).map(product => {
+          {products.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "clamp(48px,8vw,96px) 0", color: "var(--ink-400)" }}>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                Produkte werden geladen …
+              </p>
+            </div>
+          ) : (
+            <div className="shop-grid">
+              {filtered.map(product => {
                 const isAdded = addedId === product.id;
-                const src = product.imageUrl ? shopifyImgSrc(product.imageUrl, 500) : imgSrc(product.seed, 500);
+                const src = product.imageUrl ? shopifyImgSrc(product.imageUrl, 500) : null;
+
                 return (
                   <article key={product.id} style={{
                     background: "var(--paper-0)", borderRadius: "var(--r-xl)",
                     overflow: "hidden", border: "1px solid var(--paper-200)",
                     boxShadow: "var(--shadow-xs)", display: "flex", flexDirection: "column",
                   }}>
-                    <div style={{ position: "relative", aspectRatio: "4/3" }}>
-                      <Image src={src} alt={product.name} fill sizes="(max-width: 600px) 100vw, 260px" style={{ objectFit: "cover" }} />
+                    {/* Clickable image */}
+                    <Link href={`/shop/${product.id}`} className="shop-card-img" style={{ display: "block", position: "relative", overflow: "hidden", background: "var(--paper-100)" }}>
+                      {src && <Image src={src} alt={product.name} fill sizes="(max-width: 520px) 50vw, (max-width: 900px) 33vw, 260px" style={{ objectFit: "contain" }} />}
                       {product.badge && (
                         <span style={{
                           position: "absolute", top: 12, left: 12,
@@ -140,85 +137,48 @@ export default function ShopCatalogClient({ products }: Props) {
                           color: "var(--on-rust)", borderRadius: "var(--r-pill)",
                         }}>{product.badge}</span>
                       )}
-                    </div>
-                    <div style={{ padding: "18px 18px 20px", display: "flex", flexDirection: "column", gap: "6px", flex: 1 }}>
+                    </Link>
+
+                    <div className="shop-card-body" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-400)" }}>{product.cat}</span>
-                      <h3 style={{ fontSize: "var(--fs-h4)", color: "var(--ink-900)", lineHeight: "1.3" }}>{product.name}</h3>
-                      <div style={{ fontFamily: "var(--font-serif)", fontSize: "1.2rem", color: "var(--rust-500)", marginTop: "auto", paddingTop: "8px" }}>
+                      <Link href={`/shop/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                        <h3 className="shop-card-title" style={{ color: "var(--ink-900)", lineHeight: "1.3" }}>{product.name}</h3>
+                      </Link>
+                      <div className="shop-card-price" style={{ fontFamily: "var(--font-serif)", color: "var(--rust-500)", marginTop: "auto", paddingTop: "6px" }}>
                         {product.price}
                       </div>
-                      <button onClick={() => handleAddShopify(product)} style={{
-                        marginTop: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-                        fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 500,
-                        letterSpacing: "0.14em", textTransform: "uppercase",
-                        background: isAdded ? "var(--rust-50)" : "var(--charcoal)",
-                        color: isAdded ? "var(--rust-600)" : "var(--on-charcoal)",
-                        border: isAdded ? "1px solid var(--rust-300)" : "1px solid transparent",
-                        padding: "10px 14px", borderRadius: "var(--r-pill)", cursor: "pointer",
-                        transition: "all 200ms", minHeight: "44px",
-                      }}>
-                        {isAdded
-                          ? <><Check size={14} strokeWidth={2.5} /> In den Warenkorb</>
-                          : <><ShoppingBag size={14} strokeWidth={1.8} /> In den Warenkorb</>
-                        }
-                      </button>
+
+                      {/* Actions row */}
+                      <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                        <button onClick={() => handleQuickAdd(product)} className="shop-card-btn" style={{
+                          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                          fontFamily: "var(--font-sans)", fontWeight: 500, textTransform: "uppercase",
+                          background: isAdded ? "var(--rust-50)" : "var(--charcoal)",
+                          color: isAdded ? "var(--rust-600)" : "var(--on-charcoal)",
+                          border: isAdded ? "1px solid var(--rust-300)" : "1px solid transparent",
+                          borderRadius: "var(--r-pill)", cursor: "pointer", transition: "all 200ms",
+                        }}>
+                          {isAdded
+                            ? <><Check size={13} strokeWidth={2.5} /> Gelegt</>
+                            : <><ShoppingBag size={13} strokeWidth={1.8} /> Kaufen</>
+                          }
+                        </button>
+                        <Link href={`/shop/${product.id}`} className="shop-card-detail-btn" style={{
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontFamily: "var(--font-mono)", textTransform: "uppercase",
+                          color: "var(--ink-700)", background: "transparent",
+                          border: "1px solid var(--paper-300)", borderRadius: "var(--r-pill)",
+                          textDecoration: "none", whiteSpace: "nowrap",
+                        }}>
+                          Details
+                        </Link>
+                      </div>
                     </div>
                   </article>
                 );
-              })
-              : (filtered as typeof SHOP).map((item) => {
-              const isAdded = addedId === item.id;
-              return (
-                <article key={item.id} style={{
-                  background: "var(--paper-0)", borderRadius: "var(--r-xl)",
-                  overflow: "hidden", border: "1px solid var(--paper-200)",
-                  boxShadow: "var(--shadow-xs)",
-                  display: "flex", flexDirection: "column",
-                }}>
-                  <div style={{ position: "relative", aspectRatio: "4/3" }}>
-                    <Image src={imgSrc(item.seed, 500)} alt={item.name} fill sizes="(max-width: 600px) 100vw, 260px" style={{ objectFit: "cover" }} />
-                    {item.badge && (
-                      <span style={{
-                        position: "absolute", top: 12, left: 12,
-                        fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.16em",
-                        textTransform: "uppercase", padding: "4px 10px",
-                        background: item.badge === "Beliebt" ? "var(--rust-500)" : item.badge === "Neu" ? "var(--charcoal)" : "var(--gold-500)",
-                        color: "var(--on-rust)", borderRadius: "var(--r-pill)",
-                      }}>{item.badge}</span>
-                    )}
-                  </div>
-                  <div style={{ padding: "18px 18px 20px", display: "flex", flexDirection: "column", gap: "6px", flex: 1 }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--ink-400)" }}>{item.cat}</span>
-                    <h3 style={{ fontSize: "var(--fs-h4)", color: "var(--ink-900)", lineHeight: "1.3" }}>{item.name}</h3>
-                    <div style={{ fontFamily: "var(--font-serif)", fontSize: "1.2rem", color: "var(--rust-500)", marginTop: "auto", paddingTop: "8px" }}>
-                      {item.price.toFixed(2).replace(".", ",")} €
-                    </div>
-                    {/* Stars placeholder */}
-                    <div style={{ display: "flex", gap: "2px", marginTop: "2px" }}>
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star key={s} size={11} fill="var(--gold-400)" color="var(--gold-400)" />
-                      ))}
-                    </div>
-                    <button onClick={() => handleAdd(item)} style={{
-                      marginTop: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-                      fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 500,
-                      letterSpacing: "0.14em", textTransform: "uppercase",
-                      background: isAdded ? "var(--rust-50)" : "var(--charcoal)",
-                      color: isAdded ? "var(--rust-600)" : "var(--on-charcoal)",
-                      border: isAdded ? "1px solid var(--rust-300)" : "1px solid transparent",
-                      padding: "10px 14px", borderRadius: "var(--r-pill)", cursor: "pointer",
-                      transition: "all 200ms", minHeight: "44px",
-                    }}>
-                      {isAdded
-                        ? <><Check size={14} strokeWidth={2.5} /> In den Warenkorb</>
-                        : <><ShoppingBag size={14} strokeWidth={1.8} /> In den Warenkorb</>
-                      }
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -231,11 +191,8 @@ export default function ShopCatalogClient({ products }: Props) {
               { icon: "✍️", title: "Personalisierbar", body: "Gravur, Druck, Stickerei — viele Artikel auf Wunsch mit eurem Namen." },
               { icon: "💬", title: "Persönliche Beratung", body: "Nicht sicher, was passt? Anni hilft bei der Auswahl — kostenlos & direkt." },
               { icon: "🌿", title: "Handgemacht in Deutschland", body: "Alle Artikel von Anni oder ausgewählten Handwerkerinnen aus der Region." },
-            ].map((card) => (
-              <div key={card.title} style={{
-                background: "var(--paper-0)", borderRadius: "var(--r-lg)",
-                padding: "22px 20px", border: "1px solid var(--paper-200)", boxShadow: "var(--shadow-xs)",
-              }}>
+            ].map(card => (
+              <div key={card.title} style={{ background: "var(--paper-0)", borderRadius: "var(--r-lg)", padding: "22px 20px", border: "1px solid var(--paper-200)", boxShadow: "var(--shadow-xs)" }}>
                 <div style={{ fontSize: "1.4rem", marginBottom: "10px" }}>{card.icon}</div>
                 <h3 style={{ fontSize: "var(--fs-h4)", marginBottom: "6px" }}>{card.title}</h3>
                 <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.86rem", color: "var(--ink-500)", lineHeight: "1.5" }}>{card.body}</p>
@@ -273,6 +230,42 @@ export default function ShopCatalogClient({ products }: Props) {
         @media (min-width: 640px) {
           .shop-hero-grid { grid-template-columns: 1fr 280px !important; }
         }
+
+        /* ── Product grid ── */
+        .shop-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        @media (min-width: 520px) {
+          .shop-grid {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+          }
+        }
+
+        /* ── Card image ── */
+        .shop-card-img { height: 150px; }
+        @media (min-width: 520px) { .shop-card-img { height: 200px; } }
+
+        /* ── Card body ── */
+        .shop-card-body { padding: 10px 10px 12px; gap: 4px; }
+        @media (min-width: 520px) { .shop-card-body { padding: 16px 16px 18px; gap: 6px; } }
+
+        /* ── Card title ── */
+        .shop-card-title { font-size: 0.8rem; margin: 0; }
+        @media (min-width: 520px) { .shop-card-title { font-size: var(--fs-h4); } }
+
+        /* ── Card price ── */
+        .shop-card-price { font-size: 1rem; }
+        @media (min-width: 520px) { .shop-card-price { font-size: 1.2rem; } }
+
+        /* ── Quick-add & detail buttons ── */
+        .shop-card-btn { font-size: 0.68rem; letter-spacing: 0.08em; padding: 7px 8px; min-height: 34px; }
+        @media (min-width: 520px) { .shop-card-btn { font-size: 0.78rem; letter-spacing: 0.12em; padding: 9px 12px; min-height: 40px; } }
+
+        .shop-card-detail-btn { font-size: 0.65rem; letter-spacing: 0.08em; padding: 7px 10px; }
+        @media (min-width: 520px) { .shop-card-detail-btn { font-size: 0.72rem; letter-spacing: 0.1em; padding: 9px 14px; } }
       `}</style>
     </main>
   );
