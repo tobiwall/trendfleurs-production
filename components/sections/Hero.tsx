@@ -106,6 +106,12 @@ export default function Hero() {
           z-index: 5;
         }
 
+        /* ── Anni image: soft organic mask ── */
+        .h-anni {
+          -webkit-mask-image: radial-gradient(ellipse 82% 88% at 52% 26%, black 30%, rgba(0,0,0,0.88) 52%, transparent 100%);
+          mask-image: radial-gradient(ellipse 82% 88% at 52% 26%, black 30%, rgba(0,0,0,0.88) 52%, transparent 100%);
+        }
+
         /* Mobile gradient bridge — hidden on desktop */
         .h-mob-bridge { display: none; }
 
@@ -115,16 +121,16 @@ export default function Hero() {
           .h-grid {
             grid-template-columns: 1fr;
             padding-top: clamp(52px, 10vw, 72px) !important;
-            padding-bottom: 54svh !important;
+            padding-bottom: 64svh !important;
             gap: 0 !important;
             align-items: flex-start;
           }
 
-          /* Anni: float out of grid, anchor to section bottom */
+          /* Anni: float out of grid, anchored to section bottom, taller so face is above fold */
           .h-anni-col {
             position: absolute !important;
             inset: auto 0 0 0 !important;
-            height: 58svh;
+            height: 70svh;
             z-index: 2;
           }
 
@@ -133,11 +139,17 @@ export default function Hero() {
             display: block;
             position: absolute;
             left: 0; right: 0;
-            bottom: calc(58svh - 100px);
-            height: 200px;
+            bottom: calc(70svh - 80px);
+            height: 180px;
             background: linear-gradient(to bottom, var(--cream) 0%, transparent 100%);
             z-index: 3;
             pointer-events: none;
+          }
+
+          /* Mobile mask: only fade sides — top handled by gradient bridge */
+          .h-anni {
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
           }
 
           /* Hide the floating phone badge on mobile (not enough space) */

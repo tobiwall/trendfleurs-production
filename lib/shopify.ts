@@ -16,6 +16,14 @@ export interface ShopifyImage {
   height: number;
 }
 
+export interface ProductHighlight {
+  id: string;
+  name: string;
+  price: string;
+  imageUrl: string | null;
+  type: 'verleih' | 'shop';
+}
+
 export interface NormalizedProduct {
   id: string;           // Shopify handle — used as URL slug
   shopifyId: string;    // full GID

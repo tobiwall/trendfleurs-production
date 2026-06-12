@@ -23,9 +23,9 @@ const PROJECTS = [
     accent: "var(--gold-500)",
   },
   {
-    img: "https://images.unsplash.com/photo-1490750967868-88df5691cc81?auto=format&fit=crop&w=800&q=80",
-    alt: "Florale Bogengestaltung für Hochzeiten",
-    label: "Traubogen · Frankfurt",
+    img: "/decorated_desk.webp",
+    alt: "Dekorierter Tisch mit Blumen und Kerzen für Hochzeit",
+    label: "Esstisch geschmückt · Frankfurt",
     tag: "Floristik",
     accent: "var(--rust-500)",
   },

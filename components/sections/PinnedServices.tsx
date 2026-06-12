@@ -6,6 +6,7 @@ import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Flower2, Heart, ShoppingBag, ArrowRight } from "lucide-react";
+import type { ProductHighlight } from "@/lib/shopify";
 
 /* ─────────────────────────────────────────────────────────────
    ANIMATION ARCHITECTURE
@@ -72,44 +73,46 @@ const BLOCKS = [
   },
 ] as const;
 
-/* Cards positioned in left column but straddle the boundary → extend visibly
-   into the right column area. Left column has NO overflow:hidden, so these
-   are never clipped. The separate inner wrapper clips only the Anni photo. */
-const FLOAT_CARDS = [
+/* Static layout/animation config for the three floating cards.
+   Title, sub, img, href are overridden at runtime from Shopify highlights. */
+const FLOAT_CONFIG = [
   {
-    title: "Boho Hochzeits-Event",
-    sub: "Full-Service inklusive",
-    img: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=320&q=80",
-    imgAlt: "Elegante Hochzeitsdekoration auf einem gedeckten Tisch",
     initRotate: -2,
     floatY: -14,
-    /* right: slightly past the column boundary → visible in right col area */
     pos: { right: "-80px", bottom: "24%" },
     accent: "var(--rust-400)",
+    fallbackImg: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=320&q=80",
+    fallbackTitle: "Goldener Hoop",
+    fallbackSub: "Dekoverleih · ab 15 €/Tag",
+    fallbackHref: "/dekoverleih",
   },
   {
-    title: "Goldener Hoop",
-    sub: "Dekoverleih · ab 15 €/Tag",
-    img: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=320&q=80",
-    imgAlt: "Floraler Goldener Hoop für Hochzeiten und Events",
     initRotate: 3.5,
     floatY: 12,
     pos: { right: "-60px", top: "18%" },
     accent: "var(--gold-500)",
+    fallbackImg: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=320&q=80",
+    fallbackTitle: "Pampas & Florals",
+    fallbackSub: "Dekoverleih · ab 20 €/Tag",
+    fallbackHref: "/dekoverleih",
   },
   {
-    title: "Willkommen-Schild",
-    sub: "Personalisiert · 34 €",
-    img: "https://images.unsplash.com/photo-1544078751-58fed2b32c83?auto=format&fit=crop&w=320&q=80",
-    imgAlt: "Personalisiertes Willkommensschild für Hochzeiten",
     initRotate: -1.5,
     floatY: -10,
     pos: { right: "-90px", bottom: "10%" },
     accent: "var(--charcoal)",
+    fallbackImg: "https://images.unsplash.com/photo-1544078751-58fed2b32c83?auto=format&fit=crop&w=320&q=80",
+    fallbackTitle: "Willkommen-Schild",
+    fallbackSub: "Personalisiert · 34 €",
+    fallbackHref: "/shop",
   },
 ] as const;
 
-export default function PinnedServices() {
+interface Props {
+  highlights?: ProductHighlight[];
+}
+
+export default function PinnedServices({ highlights = [] }: Props) {
   const outerRef = useRef<HTMLElement>(null);
   const anniRef  = useRef<HTMLDivElement>(null);
 
@@ -146,6 +149,19 @@ export default function PinnedServices() {
   const d1Ref = useRef<HTMLDivElement>(null);
   const d2Ref = useRef<HTMLDivElement>(null);
 
+  // Build card data: merge live Shopify highlights into static config
+  const cardData = FLOAT_CONFIG.map((cfg, i) => {
+    const h = highlights[i];
+    return {
+      ...cfg,
+      title: h?.name ?? cfg.fallbackTitle,
+      sub:   h ? `${h.type === "verleih" ? "Dekoverleih" : "Shop"} · ${h.price}` : cfg.fallbackSub,
+      img:   h?.imageUrl ?? cfg.fallbackImg,
+      imgAlt: h?.name ?? cfg.fallbackTitle,
+      href:  h ? `/${h.type === "verleih" ? "dekoverleih" : "shop"}/${h.id}` : cfg.fallbackHref,
+    };
+  });
+
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
@@ -170,9 +186,9 @@ export default function PinnedServices() {
         gsap.set([bg1Ref.current, bg2Ref.current, bg3Ref.current], { opacity: 0 });
 
         /* Continuous float loops */
-        gsap.to(cf1Ref.current, { y: FLOAT_CARDS[0].floatY, duration: 3.2, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        gsap.to(cf2Ref.current, { y: FLOAT_CARDS[1].floatY, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 0.6 });
-        gsap.to(cf3Ref.current, { y: FLOAT_CARDS[2].floatY, duration: 3.5, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 1.2 });
+        gsap.to(cf1Ref.current, { y: FLOAT_CONFIG[0].floatY, duration: 3.2, ease: "sine.inOut", yoyo: true, repeat: -1 });
+        gsap.to(cf2Ref.current, { y: FLOAT_CONFIG[1].floatY, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 0.6 });
+        gsap.to(cf3Ref.current, { y: FLOAT_CONFIG[2].floatY, duration: 3.5, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 1.2 });
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -188,7 +204,7 @@ export default function PinnedServices() {
         /* Block 1 active t=0–8 */
         tl.to(bg1Ref.current, { opacity: 0.5, ease: "power1.inOut", duration: 2.5 }, 0);
         tl.to(anniRef.current, { scale: 1.05, x: -16, y: 0, rotationY: 0, transformPerspective: 1200, ease: "none", duration: 8 }, 0);
-        tl.to(c1Ref.current, { opacity: 1, x: 0, scale: 1, pointerEvents: "none", duration: 2.8, ease: "power2.out" }, 1.5);
+        tl.to(c1Ref.current, { opacity: 1, x: 0, scale: 1, pointerEvents: "auto", duration: 2.8, ease: "power2.out" }, 1.5);
         tl.to(c1Ref.current, { y: -22, ease: "none", duration: 6 }, 2);
         tl.to(d0Ref.current, { scaleX: 3.4, ease: "none", duration: 8 }, 0.5);
 
@@ -200,14 +216,14 @@ export default function PinnedServices() {
         tl.to(db3Ref.current, { opacity: 0.22, x: 16, y: 12, scale: 0.95, filter: "blur(3px)", duration: 2, ease: "power2.out" }, 8.8);
         tl.to(bg1Ref.current, { opacity: 0, duration: 2.2 }, 8);
         tl.to(bg2Ref.current, { opacity: 0.5, ease: "power1.inOut", duration: 2.8 }, 9);
-        tl.to(c1Ref.current, { opacity: 0, x: 22, scale: 0.88, duration: 1.8, ease: "power2.in" }, 8);
+        tl.to(c1Ref.current, { opacity: 0, x: 22, scale: 0.88, pointerEvents: "none", duration: 1.8, ease: "power2.in" }, 8);
         tl.to(d0Ref.current, { scaleX: 1, duration: 1.5, ease: "power2.out" }, 8.5);
         tl.to(d1Ref.current, { scaleX: 3.4, ease: "none", duration: 8 }, 10);
 
         /* Block 2 active t=10–18 */
         tl.to(anniRef.current, { scale: 1.0, x: 18, rotationY: 6, transformPerspective: 1200, duration: 3, ease: "power2.out" }, 10);
         tl.to(anniRef.current, { scale: 1.01, x: 18, rotationY: 6, ease: "none", duration: 5 }, 13);
-        tl.to(c2Ref.current, { opacity: 1, x: 0, scale: 1, pointerEvents: "none", duration: 2.8, ease: "power2.out" }, 11);
+        tl.to(c2Ref.current, { opacity: 1, x: 0, scale: 1, pointerEvents: "auto", duration: 2.8, ease: "power2.out" }, 11);
         tl.to(c2Ref.current, { y: -18, ease: "none", duration: 6 }, 12);
 
         /* Transition 2→3 t=18–20 */
@@ -217,14 +233,14 @@ export default function PinnedServices() {
         tl.to(db3Ref.current, { opacity: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)", duration: 2.6, ease: "power3.out" }, 18.5);
         tl.to(bg2Ref.current, { opacity: 0, duration: 2.2 }, 18);
         tl.to(bg3Ref.current, { opacity: 0.46, ease: "power1.inOut", duration: 2.8 }, 19);
-        tl.to(c2Ref.current, { opacity: 0, x: 22, scale: 0.88, duration: 1.8, ease: "power2.in" }, 18);
+        tl.to(c2Ref.current, { opacity: 0, x: 22, scale: 0.88, pointerEvents: "none", duration: 1.8, ease: "power2.in" }, 18);
         tl.to(d1Ref.current, { scaleX: 1, duration: 1.5, ease: "power2.out" }, 18.5);
         tl.to(d2Ref.current, { scaleX: 3.4, ease: "none", duration: 9 }, 20.5);
 
         /* Block 3 active t=20–30 */
         tl.to(anniRef.current, { scale: 1.11, x: -10, rotationY: 0, transformPerspective: 1200, duration: 3.5, ease: "power2.out" }, 20);
         tl.to(anniRef.current, { scale: 1.14, y: -24, ease: "none", duration: 7 }, 23);
-        tl.to(c3Ref.current, { opacity: 1, x: 0, scale: 1, pointerEvents: "none", duration: 3, ease: "power2.out" }, 21.5);
+        tl.to(c3Ref.current, { opacity: 1, x: 0, scale: 1, pointerEvents: "auto", duration: 3, ease: "power2.out" }, 21.5);
         tl.to(c3Ref.current, { y: -28, ease: "none", duration: 7 }, 22.5);
 
         ScrollTrigger.refresh();
@@ -312,6 +328,13 @@ export default function PinnedServices() {
     return () => ctx.revert();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Dynamic thumbs for mobile block cards
+  const mobileThumbOverrides = [
+    undefined, // Block 0 (Hochzeiten) — keep Unsplash
+    highlights[0]?.imageUrl ?? undefined, // Block 1 (Dekoverleih) — first verleih product
+    highlights[2]?.imageUrl ?? undefined, // Block 2 (Shop) — first shop product
+  ];
+
   return (
     <>
       <style>{`
@@ -349,29 +372,18 @@ export default function PinnedServices() {
 
           {/* ═══════════════════════════════════════════════
               DESKTOP: 2-column pinned layout
-              Left col has NO overflow:hidden — inner wrapper
-              clips only the Anni photo, floating cards are free.
           ═══════════════════════════════════════════════ */}
           <div className="ps-desktop" style={{
             position: "absolute", inset: 0, display: "grid",
             gridTemplateColumns: "1fr 1fr", zIndex: 3,
           }}>
 
-            {/* ── Left: Anni (full-bleed) + floating cards ──
-                IMPORTANT: NO overflow:hidden on this div.
-                The inner anni-clip wrapper handles the photo clipping.
-                Cards can safely extend into the right column area. */}
+            {/* ── Left: Anni (full-bleed) + floating cards ── */}
             <div style={{ position: "relative" }}>
 
-              {/* Anni image — clips only inside this inner wrapper */}
+              {/* Anni image */}
               <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-                <div
-                  ref={anniRef}
-                  style={{
-                    position: "absolute", inset: 0,
-                    willChange: "transform",
-                  }}
-                >
+                <div ref={anniRef} style={{ position: "absolute", inset: 0, willChange: "transform" }}>
                   <Image
                     src="/anni2.jpg"
                     alt="Anni, Inhaberin und Floristin von a_trendfleurs — Hochzeitsplanung und Dekoverleih im Westerwald"
@@ -381,7 +393,6 @@ export default function PinnedServices() {
                     style={{ objectFit: "cover", objectPosition: "top center" }}
                   />
                 </div>
-                {/* Soft gradient right-edge fade into cream — seamless join to right col */}
                 <div aria-hidden="true" style={{
                   position: "absolute", top: 0, right: 0, bottom: 0, width: "110px",
                   background: "linear-gradient(to right, transparent, var(--cream))",
@@ -389,7 +400,7 @@ export default function PinnedServices() {
                 }} />
               </div>
 
-              {/* Anni badge — sits above the clip layer */}
+              {/* Anni badge */}
               <div style={{
                 position: "absolute", bottom: 24, left: 24, zIndex: 4,
                 background: "rgba(253,251,247,0.92)", borderRadius: "var(--r-md)",
@@ -400,32 +411,41 @@ export default function PinnedServices() {
                 <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-400)", margin: "4px 0 0" }}>Floristin</p>
               </div>
 
-              {/* Floating cards — z-index 10, exceed left col boundary freely */}
-              {FLOAT_CARDS.map((card, i) => {
+              {/* Floating product cards */}
+              {cardData.map((card, i) => {
                 const outerRefs = [c1Ref, c2Ref, c3Ref] as React.RefObject<HTMLDivElement>[];
                 const innerRefs = [cf1Ref, cf2Ref, cf3Ref] as React.RefObject<HTMLDivElement>[];
                 return (
-                  <div key={i} ref={outerRefs[i]} aria-hidden="true" style={{
+                  <div key={i} ref={outerRefs[i]} style={{
                     position: "absolute",
                     ...Object.fromEntries(Object.entries(card.pos)),
                     width: "158px", zIndex: 10, willChange: "transform, opacity",
                   }}>
                     <div ref={innerRefs[i]}>
-                      <div style={{
-                        background: "var(--paper-0)", borderRadius: "var(--r-lg)",
-                        boxShadow: "0 12px 40px rgba(30,20,10,0.22), 0 2px 8px rgba(30,20,10,0.1)",
-                        border: "1px solid var(--paper-200)",
-                        overflow: "hidden", transform: `rotate(${card.initRotate}deg)`,
-                        willChange: "transform",
-                      }}>
-                        <div style={{ position: "relative", aspectRatio: "4/3" }}>
-                          <Image src={card.img} alt={card.imgAlt} fill sizes="158px" style={{ objectFit: "cover" }} />
+                      <Link href={card.href} style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+                        <div style={{
+                          background: "var(--paper-0)", borderRadius: "var(--r-lg)",
+                          boxShadow: "0 12px 40px rgba(30,20,10,0.22), 0 2px 8px rgba(30,20,10,0.1)",
+                          border: "1px solid var(--paper-200)",
+                          overflow: "hidden", transform: `rotate(${card.initRotate}deg)`,
+                          willChange: "transform",
+                          transition: "box-shadow 200ms",
+                        }}>
+                          <div style={{ position: "relative", aspectRatio: "4/3", background: "var(--paper-100)" }}>
+                            <Image
+                              src={card.img}
+                              alt={card.imgAlt}
+                              fill
+                              sizes="158px"
+                              style={{ objectFit: "contain" }}
+                            />
+                          </div>
+                          <div style={{ padding: "10px 12px 12px" }}>
+                            <p style={{ fontFamily: "var(--font-serif)", fontSize: "0.92rem", color: "var(--ink-900)", fontWeight: 400, margin: 0, lineHeight: 1.3 }}>{card.title}</p>
+                            <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: card.accent, margin: "5px 0 0" }}>{card.sub}</p>
+                          </div>
                         </div>
-                        <div style={{ padding: "10px 12px 12px" }}>
-                          <p style={{ fontFamily: "var(--font-serif)", fontSize: "0.92rem", color: "var(--ink-900)", fontWeight: 400, margin: 0, lineHeight: 1.3 }}>{card.title}</p>
-                          <p style={{ fontFamily: "var(--font-mono)", fontSize: "9px", letterSpacing: "0.14em", textTransform: "uppercase", color: card.accent, margin: "5px 0 0" }}>{card.sub}</p>
-                        </div>
-                      </div>
+                      </Link>
                     </div>
                   </div>
                 );
@@ -508,7 +528,7 @@ export default function PinnedServices() {
 
             <div style={{ position: "relative", zIndex: 1, padding: "0 var(--gutter)" }}>
 
-              {/* Mobile header: centered, Anni portrait prominent */}
+              {/* Mobile header */}
               <div style={{
                 paddingTop: "var(--sp-7)",
                 display: "flex", flexDirection: "column",
@@ -523,7 +543,7 @@ export default function PinnedServices() {
                   Was wir für euch tun
                 </p>
 
-                {/* Anni portrait — 160×200px organic oval, centered */}
+                {/* Anni portrait */}
                 <div style={{
                   width: "160px", height: "200px", flexShrink: 0, position: "relative",
                   borderRadius: "52% 60% 55% 48% / 58% 52% 48% 54%",
@@ -569,7 +589,11 @@ export default function PinnedServices() {
               <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
                 {([mb1Ref, mb2Ref, mb3Ref] as React.RefObject<HTMLDivElement>[]).map((ref, i) => (
                   <div key={i} ref={ref} style={{ willChange: "transform, opacity" }}>
-                    <MobileBlockCard {...BLOCKS[i]} />
+                    <MobileBlockCard
+                      {...BLOCKS[i]}
+                      thumb={mobileThumbOverrides[i] ?? BLOCKS[i].thumb}
+                      thumbObjectFit={mobileThumbOverrides[i] ? "contain" : "cover"}
+                    />
                   </div>
                 ))}
               </div>
@@ -682,8 +706,12 @@ function BlockCard({ num, kicker, title, body, stats, cta, href, Icon, accent, a
   );
 }
 
-/* ─── Mobile Block Card (compact with thumbnail) ─── */
-function MobileBlockCard({ kicker, title, body, stats, cta, href, Icon, accent, accentBg, thumb, thumbAlt }: BlockProps) {
+/* ─── Mobile Block Card ─── */
+interface MobileBlockProps extends BlockProps {
+  thumbObjectFit?: "cover" | "contain";
+}
+
+function MobileBlockCard({ kicker, title, body, stats, cta, href, Icon, accent, accentBg, thumb, thumbAlt, thumbObjectFit = "cover" }: MobileBlockProps) {
   return (
     <article style={{
       background: "var(--paper-0)", borderRadius: "var(--r-lg)",
@@ -691,28 +719,30 @@ function MobileBlockCard({ kicker, title, body, stats, cta, href, Icon, accent, 
       border: "1px solid var(--paper-200)",
     }}>
       {thumb && (
-        <div style={{ position: "relative", height: "140px", overflow: "hidden" }}>
-          <Image
-            src={thumb}
-            alt={thumbAlt ?? kicker}
-            fill
-            sizes="(max-width: 767px) 100vw, 400px"
-            style={{ objectFit: "cover" }}
-          />
-          <div style={{
-            position: "absolute", inset: 0,
-            background: `linear-gradient(to bottom, transparent 30%, ${accentBg} 100%)`,
-          }} />
-          <div style={{
-            position: "absolute", top: 12, left: 12,
-            width: 36, height: 36, borderRadius: "var(--r-sm)",
-            background: "rgba(253,251,247,0.9)", backdropFilter: "blur(8px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: accent, boxShadow: "var(--shadow-sm)",
-          }}>
-            <Icon size={17} strokeWidth={1.5} />
+        <Link href={href} style={{ display: "block" }}>
+          <div style={{ position: "relative", height: "140px", overflow: "hidden", background: "var(--paper-100)" }}>
+            <Image
+              src={thumb}
+              alt={thumbAlt ?? kicker}
+              fill
+              sizes="(max-width: 767px) 100vw, 400px"
+              style={{ objectFit: thumbObjectFit }}
+            />
+            <div style={{
+              position: "absolute", inset: 0,
+              background: `linear-gradient(to bottom, transparent 30%, ${accentBg} 100%)`,
+            }} />
+            <div style={{
+              position: "absolute", top: 12, left: 12,
+              width: 36, height: 36, borderRadius: "var(--r-sm)",
+              background: "rgba(253,251,247,0.9)", backdropFilter: "blur(8px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: accent, boxShadow: "var(--shadow-sm)",
+            }}>
+              <Icon size={17} strokeWidth={1.5} />
+            </div>
           </div>
-        </div>
+        </Link>
       )}
 
       <div style={{ padding: "18px 18px 16px" }}>
