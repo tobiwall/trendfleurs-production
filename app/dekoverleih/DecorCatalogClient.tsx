@@ -22,6 +22,7 @@ function hasRealVariants(variants: ShopifyVariant[]): boolean {
 function fmtVariantPrice(amount: string): string {
   const n = parseFloat(amount);
   if (isNaN(n)) return '–';
+  if (n === 0) return 'Auf Anfrage';
   return `ab ${n % 1 === 0 ? String(n) : n.toFixed(2).replace('.', ',')} €`;
 }
 
@@ -199,7 +200,7 @@ export default function DecorCatalogClient({ products }: Props) {
                     )}
 
                     <div className="decor-card-price" style={{ fontFamily: "var(--font-serif)", color: "var(--rust-500)", marginTop: "auto", paddingTop: "6px" }}>
-                      {displayPrice} <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--ink-400)", letterSpacing: "0.1em" }}>{product.unit}</span>
+                      {displayPrice}{displayPrice !== "Auf Anfrage" && <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--ink-400)", letterSpacing: "0.1em" }}>{" "}{product.unit}</span>}
                     </div>
 
                     <button onClick={() => handleWish(product)} className="decor-card-btn" style={{

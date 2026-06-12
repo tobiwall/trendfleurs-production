@@ -33,13 +33,11 @@ export default function Hero() {
       /* ── Entrance — shared across all sizes ── */
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       tl
-        .from(".h-eyebrow",    { opacity: 0, y: 20, duration: 0.8 }, 0.05)
-        .from(".h-eyebrow-2",  { opacity: 0, y: 16, duration: 0.7 }, 0.2)
-        .from(".h-line",       { opacity: 0, y: 52, duration: 1.1, stagger: 0.11 }, 0.3)
-        .from(".h-sub",        { opacity: 0, y: 20, duration: 0.9 }, 0.88)
-        .from(".h-cta-wrap",   { opacity: 0, y: 20, duration: 0.8 }, 1.05)
-        .from(".h-badge",      { opacity: 0, scale: 0.82, duration: 0.8, stagger: 0.1 }, 0.72)
-        .from(".h-scroll-cue", { opacity: 0, duration: 1.4 }, 1.4);
+        .from(".h-line",       { opacity: 0, y: 52, duration: 1.1, stagger: 0.11 }, 0.1)
+        .from(".h-sub",        { opacity: 0, y: 20, duration: 0.9 }, 0.68)
+        .from(".h-cta-wrap",   { opacity: 0, y: 20, duration: 0.8 }, 0.85)
+        .from(".h-badge",      { opacity: 0, scale: 0.82, duration: 0.8, stagger: 0.1 }, 0.52)
+        .from(".h-scroll-cue", { opacity: 0, duration: 1.4 }, 1.2);
 
       /* ── Anni entrance — direction differs by breakpoint ── */
       mm.add("(min-width: 861px)", () => {
@@ -243,25 +241,10 @@ export default function Hero() {
         >
           {/* ── Left: Text ── */}
           <div style={{ position: "relative", zIndex: 10 }}>
-            <p className="h-eyebrow" aria-label="Tätigkeitsregionen" style={{
-              fontFamily: "var(--font-mono)", fontSize: "var(--fs-kicker)",
-              letterSpacing: "var(--track-kicker)", textTransform: "uppercase",
-              color: "var(--rust-600)", fontWeight: 400,
-            }}>
-              Westerwald · Köln · Frankfurt · NRW
-            </p>
-            <p className="h-eyebrow-2" style={{
-              fontFamily: "var(--font-mono)", fontSize: "var(--fs-kicker)",
-              letterSpacing: "var(--track-kicker)", textTransform: "uppercase",
-              color: "var(--ink-400)", fontWeight: 400, marginTop: "6px",
-            }}>
-              Eventagentur · Floristik · Dekoverleih
-            </p>
-
             <h1 id="hero-headline" style={{
               fontFamily: "var(--font-serif)", fontWeight: 400,
               fontSize: "var(--fs-display)", lineHeight: "var(--lh-display)",
-              letterSpacing: "var(--track-tight)", color: "var(--ink-900)", marginTop: "20px",
+              letterSpacing: "var(--track-tight)", color: "var(--ink-900)",
             }}>
               <span className="h-line" style={{ display: "block" }}>Dein schönster</span>
               <span className="h-line" style={{ display: "block" }}>Tag — gestaltet</span>

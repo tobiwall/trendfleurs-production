@@ -218,7 +218,7 @@ export default async function DecorDetailPage(
 
                 <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "20px" }}>
                   <span style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(1.6rem,3vw,2.2rem)", color: "var(--rust-500)" }}>{shopifyProduct.price}</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-400)" }}>{shopifyProduct.unit}</span>
+                  {shopifyProduct.price !== "Auf Anfrage" && <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-400)" }}>{shopifyProduct.unit}</span>}
                 </div>
 
                 {shopifyProduct.descriptionHtml && (
@@ -392,14 +392,21 @@ export default async function DecorDetailPage(
                 </h1>
 
                 {/* Price */}
-                <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "20px" }}>
-                  <span style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(1.6rem,3vw,2.2rem)", color: "var(--rust-500)" }}>
-                    {item.price}
-                  </span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-400)" }}>
-                    {item.unit}
-                  </span>
-                </div>
+                {(() => {
+                  const displayPrice = shopifyProduct?.price ?? item.price;
+                  return (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "20px" }}>
+                      <span style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(1.6rem,3vw,2.2rem)", color: "var(--rust-500)" }}>
+                        {displayPrice}
+                      </span>
+                      {displayPrice !== "Auf Anfrage" && (
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-400)" }}>
+                          {item.unit}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Meta row */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "14px" }}>

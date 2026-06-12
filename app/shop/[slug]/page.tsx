@@ -125,9 +125,11 @@ export default async function ShopDetailPage(
                   <span style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(1.6rem,3vw,2.2rem)", color: "var(--rust-500)" }}>
                     {product.price}
                   </span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-400)" }}>
-                    {product.unit}
-                  </span>
+                  {product.price !== "Auf Anfrage" && (
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-400)" }}>
+                      {product.unit}
+                    </span>
+                  )}
                 </div>
 
                 {/* Meta tags */}

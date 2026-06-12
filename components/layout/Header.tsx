@@ -138,14 +138,7 @@ export default function Header() {
         transform: open ? "translateX(0)" : "translateX(100%)",
         transition: "transform 420ms cubic-bezier(0.22,1,0.36,1)",
       }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 24px 0" }}>
-          <Image src="/logo.png" alt="a_trendfleurs by Anni" width={772} height={772} style={{ width: "160px", height: "auto", display: "block" }} />
-          <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-500)", padding: "8px" }}>
-            <X size={22} strokeWidth={1.6} />
-          </button>
-        </div>
-
-        <nav style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 24px 20px", overflowY: "auto" }}>
+        <nav style={{ flex: 1, display: "flex", flexDirection: "column", padding: "clamp(68px,11vw,80px) 24px 20px", overflowY: "auto" }}>
           {MOBILE_NAV.map((n, i) => (
             <Link key={n.href + i} href={n.href}
               style={{

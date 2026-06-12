@@ -20,7 +20,7 @@ interface FormState {
 type SubmitStatus = "idle" | "loading" | "success" | "error";
 
 function buildWhatsAppText(items: { name: string; price: string; unit?: string; qty: number }[], form: FormState): string {
-  const list = items.map((i) => `• ${i.qty}× ${i.name} (${i.price}${i.unit ?? ""})`).join("\n");
+  const list = items.map((i) => `• ${i.qty}× ${i.name} (${i.price}${i.price !== "Auf Anfrage" ? (i.unit ?? "") : ""})`).join("\n");
   return [
     "Hallo Anni! 🌸",
     "",
@@ -319,7 +319,7 @@ export default function WishlistDrawer() {
                       letterSpacing: "0.14em", textTransform: "uppercase",
                       color: "var(--rust-500)", marginBottom: "10px",
                     }}>
-                      {item.price}{item.unit}
+                      {item.price}{item.price !== "Auf Anfrage" && item.unit}
                     </p>
 
                     {/* Qty controls */}

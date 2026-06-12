@@ -55,10 +55,10 @@ export default async function HomePage() {
     <>
       <Hero />
       <TrustBar />
-      <PinnedServices highlights={highlights} />
-      <StorySection />
       <ServiceWorlds />
+      <PinnedServices highlights={highlights} />
       <ProjectGallery />
+      <StorySection />
       <GoogleReviews />
       <LocalSEO />
       <CtaBanner />

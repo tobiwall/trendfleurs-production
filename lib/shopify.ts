@@ -75,6 +75,7 @@ function badgeFromTags(tags: string[]): string | null {
 function fmtPrice(amount: string): string {
   const n = parseFloat(amount);
   if (isNaN(n)) return '–';
+  if (n === 0) return 'Auf Anfrage';
   const s = n % 1 === 0 ? String(n) : n.toFixed(2).replace('.', ',');
   return `ab ${s} €`;
 }
