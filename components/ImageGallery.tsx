@@ -39,7 +39,7 @@ export default function ImageGallery({ images, fallbackSrc, alt, badge, priority
     return (
       <div style={{
         position: "relative", borderRadius: "var(--r-xl)", overflow: "hidden",
-        background: "var(--paper-100)", height: "clamp(280px, 45vw, 500px)",
+        background: "var(--paper-100)", height: "clamp(320px, 55vw, 580px)",
       }}>
         {fallbackSrc
           ? <Image src={fallbackSrc} alt={alt} fill sizes="(max-width: 768px) 100vw, 50vw" style={{ objectFit: "contain" }} priority={priority} />
@@ -63,7 +63,7 @@ export default function ImageGallery({ images, fallbackSrc, alt, badge, priority
             {images.map((img, i) => (
               <div key={i} style={{
                 flex: "0 0 100%", minWidth: 0, position: "relative",
-                height: "clamp(280px, 45vw, 500px)", background: "var(--paper-100)",
+                height: "clamp(320px, 55vw, 580px)", background: "var(--paper-100)",
               }}>
                 <Image
                   src={shopifyImageSrc(img.url, 1000)}

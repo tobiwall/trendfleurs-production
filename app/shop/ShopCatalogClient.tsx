@@ -244,9 +244,8 @@ export default function ShopCatalogClient({ products }: { products: NormalizedPr
           }
         }
 
-        /* ── Card image ── */
-        .shop-card-img { height: 150px; }
-        @media (min-width: 520px) { .shop-card-img { height: 200px; } }
+        /* ── Card image — portrait 4:5, scales with column width ── */
+        .shop-card-img { aspect-ratio: 4/5; }
 
         /* ── Card body ── */
         .shop-card-body { padding: 10px 10px 12px; gap: 4px; }

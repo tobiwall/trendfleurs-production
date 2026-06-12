@@ -237,9 +237,8 @@ export default function DecorCatalogClient({ products }: Props) {
           }
         }
 
-        /* ── Card image area — fixed height for alignment ── */
-        .decor-card-img { height: 150px; }
-        @media (min-width: 520px) { .decor-card-img { height: 200px; } }
+        /* ── Card image area — portrait 4:5, scales with column width ── */
+        .decor-card-img { aspect-ratio: 4/5; }
 
         /* ── Card body ── */
         .decor-card-body { padding: 10px 10px 12px; gap: 4px; }
