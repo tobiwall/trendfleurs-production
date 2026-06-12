@@ -29,6 +29,7 @@ export interface NormalizedProduct {
   shopifyId: string;    // full GID
   name: string;
   description: string;
+  descriptionHtml: string;
   cat: string;
   price: string;        // formatted, e.g. "ab 15 €"
   priceRaw: number;
@@ -101,6 +102,7 @@ const PRODUCTS_QUERY = `
           handle
           title
           description
+          descriptionHtml
           tags
           priceRange { minVariantPrice { amount currencyCode } }
           images(first: 10) {
@@ -157,7 +159,8 @@ async function _fetchAllProducts(): Promise<NormalizedProduct[]> {
       id:          node.handle,
       shopifyId:   node.id,
       name:        node.title,
-      description: node.description ?? '',
+      description:     node.description ?? '',
+      descriptionHtml: node.descriptionHtml ?? '',
       cat:         catFromTags(node.tags),
       price:       fmtPrice(node.priceRange.minVariantPrice.amount),
       priceRaw:    parseFloat(node.priceRange.minVariantPrice.amount) || 0,

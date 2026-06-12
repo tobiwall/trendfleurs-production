@@ -238,3 +238,45 @@ p, .ds-body { font-family: var(--font-sans); font-size: var(--fs-body); line-hei
   0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
   50%       { opacity: 1;   transform: scaleY(1); }
 }
+
+/* ─────────────────────────────────────────────────
+   SHOPIFY PRODUCT DESCRIPTION (HTML-Render)
+───────────────────────────────────────────────── */
+.shopify-description {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--ink-700);
+}
+
+.shopify-description p {
+  margin: 0 0 0.85em;
+}
+.shopify-description p:last-child {
+  margin-bottom: 0;
+}
+
+.shopify-description ul,
+.shopify-description ol {
+  padding-left: 1.4em;
+  margin: 0 0 0.85em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shopify-description li {
+  line-height: 1.55;
+}
+
+.shopify-description strong,
+.shopify-description b {
+  font-weight: 500;
+  color: var(--ink-900);
+}
+
+.shopify-description a {
+  color: var(--rust-500);
+  text-decoration: underline;
+}

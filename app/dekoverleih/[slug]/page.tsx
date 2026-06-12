@@ -221,10 +221,12 @@ export default async function DecorDetailPage(
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--ink-400)" }}>{shopifyProduct.unit}</span>
                 </div>
 
-                {shopifyProduct.description && (
-                  <p style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "var(--fs-body)", lineHeight: "var(--lh-body)", color: "var(--ink-700)", marginTop: "18px", maxWidth: "52ch" }}>
-                    {shopifyProduct.description}
-                  </p>
+                {shopifyProduct.descriptionHtml && (
+                  <div
+                    dangerouslySetInnerHTML={{ __html: shopifyProduct.descriptionHtml }}
+                    className="shopify-description"
+                    style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "var(--fs-body)", lineHeight: "var(--lh-body)", color: "var(--ink-700)", marginTop: "18px", maxWidth: "52ch" }}
+                  />
                 )}
 
                 <div style={{ display: "flex", gap: "12px", marginTop: "28px", flexWrap: "wrap" }}>
