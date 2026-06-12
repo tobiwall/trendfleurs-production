@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Heart, ShoppingBag, Menu, X, ChevronDown } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -65,12 +66,16 @@ export default function Header() {
       }}>
         <div className="tf-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "clamp(60px,9vw,72px)" }}>
 
-          {/* ── Wordmark ── */}
-          <Link href="/" style={{ display: "flex", flexDirection: "column", lineHeight: 1, gap: "1px", flexShrink: 0 }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "clamp(14px,4vw,19px)", letterSpacing: "0.01em", color: "var(--ink-900)" }}>
-              a<span style={{ color: "var(--rust-500)" }}>_</span>trendfleurs
-            </span>
-            <span style={{ fontFamily: "var(--font-script)", fontSize: "clamp(14px,4vw,19px)", color: "var(--rust-500)", marginTop: "-3px" }}>by Anni</span>
+          {/* ── Logo ── */}
+          <Link href="/" style={{ flexShrink: 0, display: "block", lineHeight: 0 }}>
+            <Image
+              src="/logo.png"
+              alt="a_trendfleurs by Anni"
+              width={772}
+              height={772}
+              priority
+              style={{ width: "clamp(160px, 22vw, 240px)", height: "auto", display: "block" }}
+            />
           </Link>
 
           {/* ── Desktop Nav ── */}
@@ -134,7 +139,7 @@ export default function Header() {
         transition: "transform 420ms cubic-bezier(0.22,1,0.36,1)",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 24px 0" }}>
-          <span style={{ fontFamily: "var(--font-script)", fontSize: "1.3rem", color: "var(--rust-500)" }}>by Anni</span>
+          <Image src="/logo.png" alt="a_trendfleurs by Anni" width={772} height={772} style={{ width: "160px", height: "auto", display: "block" }} />
           <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-500)", padding: "8px" }}>
             <X size={22} strokeWidth={1.6} />
           </button>

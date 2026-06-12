@@ -143,10 +143,12 @@ export default async function ShopDetailPage(
                 </div>
 
                 {/* Description */}
-                {product.description && (
-                  <p style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "var(--fs-body)", lineHeight: "var(--lh-body)", color: "var(--ink-700)", marginTop: "18px", maxWidth: "52ch" }}>
-                    {product.description}
-                  </p>
+                {product.descriptionHtml && (
+                  <div
+                    dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+                    className="shopify-description"
+                    style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "var(--fs-body)", lineHeight: "var(--lh-body)", color: "var(--ink-700)", marginTop: "18px", maxWidth: "52ch" }}
+                  />
                 )}
 
                 {/* Add to cart client (variants + personalization + button) */}

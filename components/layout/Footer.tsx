@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 const REGIONS = ["Hamm/Sieg", "Westerwald", "Köln", "Düsseldorf", "Frankfurt"];
 
@@ -31,12 +32,15 @@ export default function Footer() {
         <div className="tf-grid-footer" style={{ paddingBottom: "var(--sp-8)" }}>
           {/* ── Brand ── */}
           <div>
-            <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "19px", letterSpacing: "0.01em" }}>
-              a<span style={{ color: "var(--gold-400)" }}>_</span>trendfleurs
-            </div>
-            <div style={{ fontFamily: "var(--font-script)", fontSize: "22px", color: "var(--gold-400)", marginTop: "-2px" }}>
-              by Anni
-            </div>
+            <Link href="/" style={{ display: "inline-block", lineHeight: 0 }}>
+              <Image
+                src="/logo.png"
+                alt="a_trendfleurs by Anni"
+                width={772}
+                height={772}
+                style={{ width: "200px", height: "auto", display: "block" }}
+              />
+            </Link>
             <p style={{ color: "rgba(244,239,231,.55)", fontSize: "var(--fs-small)", marginTop: "18px", maxWidth: "30ch", lineHeight: 1.65 }}>
               Eventagentur, Floristik & Dekoverleih — Hochzeiten, JGA und Events mit Herz.
             </p>

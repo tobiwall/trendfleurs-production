@@ -54,6 +54,7 @@ export const metadata: Metadata = {
     description: "Floristik, Dekoverleih & Eventplanung für Hochzeiten in Westerwald, Köln & Frankfurt.",
     images: ["/og-image.jpg"],
   },
+  manifest: "/site.webmanifest",
   alternates: { canonical: "https://www.trendfleurs.de" },
   robots: {
     index: true,
