@@ -56,9 +56,9 @@ export default async function HomePage() {
       <Hero />
       <TrustBar />
       <ServiceWorlds />
+      <StorySection />
       <PinnedServices highlights={highlights} />
       <ProjectGallery />
-      <StorySection />
       <GoogleReviews />
       <LocalSEO />
       <CtaBanner />

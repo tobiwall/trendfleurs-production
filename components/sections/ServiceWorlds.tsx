@@ -23,7 +23,7 @@ const SERVICES = [
   {
     kicker: "02 · Dekoverleih",
     title: "Exklusiver Dekoverleih",
-    body: "Goldene Hoops, Pampas-Gras, Candlelights, Audio Gästetelefon — kuratiert für euren perfekten Tag.",
+    body: "Goldene Hoops, Pampas-Gras, Candlelights, Audio Gästetelefon (ab 89 €/Event) — kuratiert für euren perfekten Tag.",
     cta: "Kollektion ansehen",
     href: "/dekoverleih",
     Icon: Heart,

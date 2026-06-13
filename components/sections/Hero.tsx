@@ -1,36 +1,62 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
 
-/*
- * Parallax layers
- * Layer 0 — Background flowers  → yPercent +30  (slow)
- * Layer 1 — Anni                → y –90px desktop / –30px mobile  (medium)
- * Layer 2 — Text                → natural scroll  (fastest)
- *
- * Mobile hero layout:
- *   Top ~50 svh  — cream fade, eyebrow, H1, CTAs
- *   Bottom ~55 svh — Anni portrait (absolute), z-index 2
- *   Gradient bridge — cream→transparent top-to-bottom at the seam
- */
+const DESKTOP_IMGS = [
+  "/hero/desktop/01.webp",
+  "/hero/desktop/02.webp",
+  "/hero/desktop/03.webp",
+  "/hero/desktop/04.webp",
+  "/hero/desktop/05.webp",
+  "/hero/desktop/06.webp",
+  "/hero/desktop/07.webp",
+  "/hero/desktop/08.webp",
+];
+
+const MOBILE_IMGS = [
+  "/hero/mobil/01.webp",
+  "/hero/mobil/02.webp",
+  "/hero/mobil/03.webp",
+  "/hero/mobil/04.webp",
+  "/hero/mobil/05.webp",
+  "/hero/mobil/06.webp",
+  "/hero/mobil/07.webp",
+  "/hero/mobil/08.webp",
+  "/hero/mobil/09.webp",
+  "/hero/mobil/10.webp",
+];
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const bgRef      = useRef<HTMLDivElement>(null);
-  const anniRef    = useRef<HTMLDivElement>(null);
+  const [slide, setSlide] = useState(0);
+  const [imgs, setImgs] = useState<string[]>(DESKTOP_IMGS);
+
+  // Switch image set based on viewport width (breakpoint: 1080px)
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1080px)");
+    const update = (e: MediaQueryList | MediaQueryListEvent) => {
+      setImgs(e.matches ? MOBILE_IMGS : DESKTOP_IMGS);
+      setSlide(0);
+    };
+    update(mq);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Restart interval whenever the image set changes
+  useEffect(() => {
+    const timer = setInterval(() => setSlide(s => (s + 1) % imgs.length), 2000);
+    return () => clearInterval(timer);
+  }, [imgs]);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
-
     const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia();
-
-      /* ── Entrance — shared across all sizes ── */
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       tl
         .from(".h-line",       { opacity: 0, y: 52, duration: 1.1, stagger: 0.11 }, 0.1)
@@ -38,152 +64,51 @@ export default function Hero() {
         .from(".h-cta-wrap",   { opacity: 0, y: 20, duration: 0.8 }, 0.85)
         .from(".h-badge",      { opacity: 0, scale: 0.82, duration: 0.8, stagger: 0.1 }, 0.52)
         .from(".h-scroll-cue", { opacity: 0, duration: 1.4 }, 1.2);
-
-      /* ── Anni entrance — direction differs by breakpoint ── */
-      mm.add("(min-width: 861px)", () => {
-        tl.from(".h-anni", { opacity: 0, x: 40, scale: 0.96, duration: 1.2, ease: "power2.out" }, 0.15);
-      });
-      mm.add("(max-width: 860px)", () => {
-        tl.from(".h-anni", { opacity: 0, y: 70, scale: 0.97, duration: 1.3, ease: "power2.out" }, 0.35);
-      });
-
-      /* ── Background parallax (all sizes) ── */
-      gsap.to(bgRef.current, {
-        yPercent: 30,
-        ease: "none",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top", end: "bottom top",
-          scrub: 0.6,
-        },
-      });
-
-      /* ── Anni parallax — desktop: strong depth; mobile: gentle so she stays visible ── */
-      mm.add("(min-width: 861px)", () => {
-        gsap.to(anniRef.current, {
-          y: -90,
-          ease: "none",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top top", end: "bottom top",
-            scrub: 0.9,
-          },
-        });
-      });
-      mm.add("(max-width: 860px)", () => {
-        gsap.to(anniRef.current, {
-          y: -28,
-          ease: "none",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top top", end: "bottom top",
-            scrub: 0.9,
-          },
-        });
-      });
     }, sectionRef);
-
     return () => ctx.revert();
   }, []);
 
   return (
     <>
       <style>{`
-        /* ── Desktop: standard 2-col grid ── */
-        .h-grid {
-          display: grid;
-          grid-template-columns: 1.1fr 0.9fr;
-          gap: clamp(24px, 4vw, 64px);
-          align-items: center;
-        }
-
-        /* ── Desktop: Anni column natural in grid ── */
-        .h-anni-col {
-          position: relative;
-          height: clamp(440px, 65vh, 640px);
-          z-index: 5;
-        }
-
-        /* ── Anni image: soft organic mask ── */
-        .h-anni {
-          -webkit-mask-image: radial-gradient(ellipse 82% 88% at 52% 26%, black 30%, rgba(0,0,0,0.88) 52%, transparent 100%);
-          mask-image: radial-gradient(ellipse 82% 88% at 52% 26%, black 30%, rgba(0,0,0,0.88) 52%, transparent 100%);
-        }
-
-        /* Mobile gradient bridge — hidden on desktop */
-        .h-mob-bridge { display: none; }
-
-        /* ── Mobile (≤ 860px) ── */
-        @media (max-width: 860px) {
-          /* Single-column text, bottom padding = space for Anni */
-          .h-grid {
-            grid-template-columns: 1fr;
-            padding-top: clamp(52px, 10vw, 72px) !important;
-            padding-bottom: 64svh !important;
-            gap: 0 !important;
-            align-items: flex-start;
-          }
-
-          /* Anni: float out of grid, anchored to section bottom, taller so face is above fold */
-          .h-anni-col {
-            position: absolute !important;
-            inset: auto 0 0 0 !important;
-            height: 70svh;
-            z-index: 2;
-          }
-
-          /* Gradient bridge: cream top → transparent bottom, sits above Anni */
-          .h-mob-bridge {
-            display: block;
-            position: absolute;
-            left: 0; right: 0;
-            bottom: calc(70svh - 80px);
-            height: 180px;
-            background: linear-gradient(to bottom, var(--cream) 0%, transparent 100%);
-            z-index: 3;
-            pointer-events: none;
-          }
-
-          /* Mobile mask: only fade sides — top handled by gradient bridge */
-          .h-anni {
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
-            mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
-          }
-
-          /* Hide the floating phone badge on mobile (not enough space) */
-          .h-phone-badge { display: none; }
-
-          /* Sub text too long for mobile — hide to keep hero tight */
-          .h-sub { display: none; }
-
-          /* Badges wrap, reduce font size */
-          .h-badge-wrap {
-            gap: 6px !important;
-            margin-top: 20px !important;
-          }
-          .h-badge {
-            font-size: 9px !important;
-            padding: 5px 10px !important;
-          }
-
-          /* CTAs stack vertically */
-          .h-cta-inner {
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 10px !important;
-          }
-          .h-cta-inner a {
-            justify-content: center !important;
-          }
-
-          /* Hide micro-copy under buttons */
-          .h-cta-note { display: none !important; }
-        }
-
-        /* Scroll pulse animation */
         @keyframes scroll-pulse {
           0%, 100% { transform: scaleY(0.6); opacity: 0.4; }
           50%       { transform: scaleY(1.0); opacity: 1.0; }
+        }
+
+        /* ── Anni portrait — clear presence above the overlay ── */
+        .h-anni-wrap {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          width: clamp(300px, 38%, 580px);
+          height: 100%;
+          z-index: 3;
+          opacity: 1;
+          -webkit-mask-image:
+            linear-gradient(to right,  transparent 0%, black 18%, black 100%),
+            linear-gradient(to bottom, transparent 0%, black 14%, black 100%);
+          -webkit-mask-composite: source-in;
+          mask-image:
+            linear-gradient(to right,  transparent 0%, black 18%, black 100%),
+            linear-gradient(to bottom, transparent 0%, black 14%, black 100%);
+          mask-composite: intersect;
+          pointer-events: none;
+        }
+
+        @media (max-width: 860px) {
+          .h-sub { display: none; }
+          .h-badge-wrap { gap: 6px !important; margin-top: 20px !important; }
+          .h-badge { font-size: 9px !important; padding: 5px 10px !important; }
+          .h-cta-inner { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+          .h-cta-inner a { justify-content: center !important; }
+          .h-cta-note { display: none !important; }
+          .h-anni-wrap {
+            width: 44%;
+            right: 0;
+            height: 42%;
+            opacity: 0.6;
+          }
         }
       `}</style>
 
@@ -196,67 +121,88 @@ export default function Hero() {
           display: "flex",
           alignItems: "center",
           overflow: "hidden",
-          background: "var(--cream)",
         }}
       >
-        {/* ── Layer 0: Background flowers ── */}
+        {/* ── Crossfading background images ── */}
+        {imgs.map((src, i) => (
+          <div
+            key={i}
+            aria-hidden="true"
+            style={{
+              position: "absolute", inset: 0, zIndex: 0,
+              opacity: i === slide ? 1 : 0,
+              transition: "opacity 1000ms ease-in-out",
+              willChange: "opacity",
+            }}
+          >
+            <Image
+              src={src}
+              alt=""
+              fill
+              style={{ objectFit: "cover", objectPosition: "center" }}
+              sizes="100vw"
+              priority={i === 0}
+            />
+          </div>
+        ))}
+
+        {/* ── Dark warm overlay ── */}
         <div
-          ref={bgRef}
           aria-hidden="true"
           style={{
-            position: "absolute", inset: 0,
-            willChange: "transform",
-            transform: "scale(1.22)",
-            transformOrigin: "center 40%",
+            position: "absolute", inset: 0, zIndex: 1,
+            background: "linear-gradient(160deg, rgba(26,18,12,0.62) 0%, rgba(26,18,12,0.40) 100%)",
           }}
-        >
+        />
+
+        {/* ── Anni — subtile Präsenz im rechten Bilddrittel ── */}
+        <div className="h-anni-wrap" aria-hidden="true">
           <Image
-            src="https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1800&q=85"
-            alt="Florale Hochzeitsdekoration mit Trockenblumen und Pampas-Gras — a_trendfleurs by Anni"
-            fill priority sizes="100vw"
-            style={{ objectFit: "cover", objectPosition: "center 30%" }}
+            src="/anni1.jpg"
+            alt=""
+            fill
+            style={{ objectFit: "contain", objectPosition: "bottom center" }}
+            sizes="(max-width: 860px) 65vw, 34vw"
+            priority
           />
-          {/* Desktop: left-heavy gradient for text readability */}
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(108deg, rgba(253,251,247,.97) 0%, rgba(253,251,247,.82) 38%, rgba(253,251,247,.30) 65%, rgba(253,251,247,.06) 100%)",
-          }} />
-          {/* Mobile: top-heavy gradient so text area reads clean */}
-          <div aria-hidden="true" style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(to bottom, rgba(253,251,247,0.97) 0%, rgba(253,251,247,0.88) 30%, rgba(253,251,247,0.4) 52%, rgba(253,251,247,0) 72%)",
-          }} className="h-mob-top-grad" />
         </div>
 
-        {/* ── Mobile-only gradient bridge (cream→transparent above Anni) ── */}
-        <div className="h-mob-bridge" aria-hidden="true" />
-
-        {/* ── Content grid ── */}
+        {/* ── Foreground content ── */}
         <div
-          className="tf-inner h-grid"
+          className="tf-inner"
           style={{
             position: "relative", zIndex: 4, width: "100%",
             padding: "clamp(96px,14vw,160px) var(--gutter) clamp(80px,10vw,120px)",
           }}
         >
-          {/* ── Left: Text ── */}
-          <div style={{ position: "relative", zIndex: 10 }}>
+          <div style={{ maxWidth: "600px" }}>
+            <p style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "var(--fs-kicker)",
+              letterSpacing: "var(--track-kicker)",
+              textTransform: "uppercase",
+              color: "var(--gold-300)",
+              marginBottom: "20px",
+            }}>
+              Floristik · Dekoverleih · Eventplanung
+            </p>
+
             <h1 id="hero-headline" style={{
               fontFamily: "var(--font-serif)", fontWeight: 400,
               fontSize: "var(--fs-display)", lineHeight: "var(--lh-display)",
-              letterSpacing: "var(--track-tight)", color: "var(--ink-900)",
+              letterSpacing: "var(--track-tight)", color: "#fff",
             }}>
               <span className="h-line" style={{ display: "block" }}>Dein schönster</span>
               <span className="h-line" style={{ display: "block" }}>Tag — gestaltet</span>
               <span className="h-line" style={{ display: "block" }}>
-                mit <em style={{ fontStyle: "italic", color: "var(--rust-500)" }}>Liebe</em>.
+                mit <em style={{ fontStyle: "italic", color: "var(--gold-300)" }}>Liebe</em>.
               </span>
             </h1>
 
             <p className="h-sub" style={{
               fontFamily: "var(--font-sans)", fontWeight: 300,
               fontSize: "var(--fs-lead)", lineHeight: "var(--lh-body)",
-              color: "var(--ink-700)", maxWidth: "44ch", marginTop: "24px",
+              color: "rgba(255,255,255,0.85)", maxWidth: "44ch", marginTop: "24px",
             }}>
               Als gelernte Floristin im Westerwald gestalte ich nicht nur
               schöne Blumen — ich erschaffe das ganze Gefühl deines Tages.
@@ -294,7 +240,7 @@ export default function Hero() {
                   </Link>
                   <span className="h-cta-note" style={{
                     fontFamily: "var(--font-sans)", fontSize: "11px",
-                    color: "var(--ink-400)", letterSpacing: "0.04em", paddingLeft: "4px",
+                    color: "rgba(255,255,255,0.55)", letterSpacing: "0.04em", paddingLeft: "4px",
                   }}>
                     Goldene Hoops ab 15 €/Tag · keine Mindestbestellung
                   </span>
@@ -307,19 +253,19 @@ export default function Hero() {
                       display: "inline-flex", alignItems: "center", gap: "10px",
                       fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 500,
                       letterSpacing: "0.14em", textTransform: "uppercase",
-                      background: "transparent", color: "var(--ink-900)",
+                      background: "transparent", color: "#fff",
                       padding: "14px 28px", borderRadius: "var(--r-pill)",
-                      border: "1px solid var(--ink-900)", minHeight: "48px",
-                      transition: "background 220ms, color 220ms, transform 220ms",
+                      border: "1px solid rgba(255,255,255,0.65)", minHeight: "48px",
+                      transition: "background 220ms, color 220ms, transform 220ms, border-color 220ms",
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "var(--charcoal)";
-                      e.currentTarget.style.color = "var(--on-charcoal)";
+                      e.currentTarget.style.background = "rgba(255,255,255,0.15)";
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.9)";
                       e.currentTarget.style.transform = "translateY(-2px)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "var(--ink-900)";
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.65)";
                       e.currentTarget.style.transform = "none";
                     }}
                   >
@@ -327,7 +273,7 @@ export default function Hero() {
                   </Link>
                   <span className="h-cta-note" style={{
                     fontFamily: "var(--font-sans)", fontSize: "11px",
-                    color: "var(--ink-400)", letterSpacing: "0.04em", paddingLeft: "4px",
+                    color: "rgba(255,255,255,0.55)", letterSpacing: "0.04em", paddingLeft: "4px",
                   }}>
                     Unverbindlich · Anni antwortet persönlich in 48 h
                   </span>
@@ -346,69 +292,20 @@ export default function Hero() {
                 <div key={b.main} className="h-badge" style={{
                   fontFamily: "var(--font-mono)", fontSize: "10px",
                   letterSpacing: "0.1em", textTransform: "uppercase",
-                  border: "1px solid var(--paper-400)", borderRadius: "var(--r-pill)",
-                  padding: "7px 14px", background: "rgba(253,251,247,0.88)",
-                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.25)", borderRadius: "var(--r-pill)",
+                  padding: "7px 14px", background: "rgba(255,255,255,0.12)",
+                  backdropFilter: "blur(12px)",
                   display: "flex", flexDirection: "column", gap: "1px",
                 }}>
-                  <span style={{ color: "var(--ink-700)", fontWeight: 500 }}>{b.main}</span>
-                  <span style={{ color: "var(--ink-400)", fontSize: "9px" }}>{b.sub}</span>
+                  <span style={{ color: "#fff", fontWeight: 500 }}>{b.main}</span>
+                  <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "9px" }}>{b.sub}</span>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* ── Right / Mobile-bottom: Anni ── */}
-          <div className="h-anni-col">
-            <div
-              ref={anniRef}
-              className="h-anni"
-              style={{
-                position: "absolute", inset: 0,
-                filter: "drop-shadow(0 24px 56px rgba(60,42,30,0.22)) drop-shadow(0 6px 18px rgba(60,42,30,0.12))",
-                willChange: "transform",
-              }}
-            >
-              <Image
-                src="/anni1.jpg"
-                alt="Anni, Inhaberin und Floristin von a_trendfleurs — Hochzeitsplanung im Westerwald"
-                fill
-                sizes="(max-width: 860px) 100vw, 40vw"
-                style={{ objectFit: "contain", objectPosition: "bottom center" }}
-                priority
-              />
-            </div>
-
-            {/* Floating badge — hidden on mobile via class */}
-            <div className="h-badge h-phone-badge" style={{
-              position: "absolute", bottom: "8%", left: "-8%",
-              background: "rgba(253,251,247,0.94)", borderRadius: "var(--r-lg)",
-              boxShadow: "var(--shadow-md)", padding: "14px 18px",
-              display: "flex", alignItems: "center", gap: "10px",
-              backdropFilter: "blur(12px)", border: "1px solid var(--paper-300)",
-              zIndex: 6,
-            }}>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: "18px" }}>📞</span>
-              <div>
-                <p style={{
-                  fontFamily: "var(--font-mono)", fontSize: "11px",
-                  letterSpacing: "0.1em", textTransform: "uppercase",
-                  color: "var(--rust-600)", margin: 0,
-                }}>
-                  Audio Gästetelefon
-                </p>
-                <p style={{
-                  fontFamily: "var(--font-sans)", fontSize: "10px",
-                  color: "var(--ink-500)", margin: 0,
-                }}>
-                  ab 89 € / Event
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Scroll cue */}
+        {/* ── Scroll cue ── */}
         <div className="h-scroll-cue" aria-hidden="true" style={{
           position: "absolute", bottom: "36px", left: "50%",
           transform: "translateX(-50%)",
@@ -417,12 +314,12 @@ export default function Hero() {
         }}>
           <span style={{
             fontFamily: "var(--font-mono)", fontSize: "9px",
-            letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--ink-400)",
+            letterSpacing: "0.26em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)",
           }}>
             Entdecken
           </span>
           <div style={{
-            width: "1px", height: "44px", background: "var(--rust-300)",
+            width: "1px", height: "44px", background: "rgba(255,255,255,0.4)",
             animation: "scroll-pulse 2.2s ease-in-out infinite",
             transformOrigin: "top",
           }} />

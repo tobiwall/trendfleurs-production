@@ -2,7 +2,6 @@
 
 import { useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
@@ -16,8 +15,7 @@ const HEADLINE: Array<{ text: string; break?: true }> = [
 
 export default function StorySection() {
   const sectionRef  = useRef<HTMLElement>(null);
-  const imgWrapRef  = useRef<HTMLDivElement>(null);
-  const imgRef      = useRef<HTMLDivElement>(null);
+  const videoColRef = useRef<HTMLDivElement>(null);
   const kickerRef   = useRef<HTMLParagraphElement>(null);
   const bodyRef     = useRef<HTMLDivElement>(null);
   const textColRef  = useRef<HTMLDivElement>(null);
@@ -28,8 +26,14 @@ export default function StorySection() {
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
+      /* ── Video column slides in from left on both sizes ── */
+      gsap.from(videoColRef.current, {
+        opacity: 0, x: -28, duration: 1.1, ease: "power3.out",
+        scrollTrigger: { trigger: sectionRef.current, start: "top 80%", once: true },
+      });
+
       /* ══════════════════════════════════════════
-         DESKTOP: existing 3D lamella + parallax
+         DESKTOP: 3D lamella headline + stagger
       ══════════════════════════════════════════ */
       mm.add("(min-width: 768px)", () => {
         const scrollTrig = {
@@ -57,63 +61,30 @@ export default function StorySection() {
           opacity: 0, y: 22, stagger: 0.1, duration: 0.85, ease: "power3.out",
           scrollTrigger: { ...scrollTrig, start: "top 70%" },
         });
-
-        gsap.fromTo(
-          imgRef.current,
-          { yPercent: -5 },
-          {
-            yPercent: 7, ease: "none",
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: "top bottom", end: "bottom top", scrub: 0.9,
-            },
-          }
-        );
       });
 
       /* ══════════════════════════════════════════
-         MOBILE: Full-Screen Parallax — text flies
-         toward viewer on the Z axis
+         MOBILE: Z-axis fly-through headline
       ══════════════════════════════════════════ */
       mm.add("(max-width: 767px)", () => {
         const section = sectionRef.current!;
         const st = { trigger: section, start: "top 82%", once: true };
 
-        /* Background parallax — stronger on mobile for drama */
-        gsap.fromTo(imgRef.current,
-          { yPercent: -10 },
-          {
-            yPercent: 10, ease: "none",
-            scrollTrigger: {
-              trigger: section,
-              start: "top bottom", end: "bottom top", scrub: 0.7,
-            },
-          }
-        );
-
-        /* Kicker drifts up */
         gsap.from(kickerRef.current, {
           opacity: 0, y: 22, duration: 0.9, ease: "power4.out",
           scrollTrigger: st,
         });
 
-        /* Words: Z-axis scale fly-through — each word zooms in
-           from "far away" (small) to full size, staggered */
         gsap.set(section.querySelectorAll(".story-word"), {
           transformPerspective: 520,
           transformOrigin: "50% 50%",
         });
         gsap.from(section.querySelectorAll(".story-word"), {
-          scale: 0.42,
-          opacity: 0,
-          y: 10,
-          stagger: 0.075,
-          duration: 1.15,
-          ease: "power4.out",
+          scale: 0.42, opacity: 0, y: 10,
+          stagger: 0.075, duration: 1.15, ease: "power4.out",
           scrollTrigger: { ...st, start: "top 86%" },
         });
 
-        /* Body block: line-by-line drift up */
         gsap.from(bodyRef.current!.children, {
           opacity: 0, y: 24,
           stagger: 0.09, duration: 0.95, ease: "power4.out",
@@ -166,91 +137,65 @@ export default function StorySection() {
           pointer-events: none;
         }
 
-        /* ── Mobile overlay (dark gradient, hidden on desktop) ── */
-        .story-mob-gradient {
-          display: none;
+        /* ── Reel video card ── */
+        .story-video-col {
+          position: relative;
+          border-radius: 24px;
+          overflow: hidden;
+          aspect-ratio: 9 / 16;
+          max-height: 72vh;
+          box-shadow: 0 24px 64px rgba(26,14,8,0.22), 0 4px 16px rgba(26,14,8,0.10);
+          will-change: transform, opacity;
+          background: var(--paper-200);
+        }
+        .story-video-col video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        /* Quote badge inside video card */
+        .story-quote-badge {
+          position: absolute;
+          bottom: 24px; left: 16px; right: 16px;
+          background: rgba(253,251,247,0.93);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border-radius: var(--r-md);
+          border: 1px solid var(--paper-300);
+          padding: 14px 18px;
+          box-shadow: var(--shadow-md);
         }
 
         /* ══════════════════════════════════════════
-           MOBILE: Full-Screen Parallax Layout
+           MOBILE: stacked layout — video card above text
         ══════════════════════════════════════════ */
         @media (max-width: 767px) {
           .story-section {
-            padding: 0 !important;
-            min-height: 100svh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
+            padding: var(--sp-section) 0;
           }
           .story-desk-wash { display: none; }
 
-          /* Dark gradient for text legibility */
-          .story-mob-gradient {
-            display: block;
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-              to top,
-              rgba(10,6,3,0.93) 0%,
-              rgba(10,6,3,0.64) 36%,
-              rgba(10,6,3,0.22) 62%,
-              transparent 100%
-            );
-            z-index: 2;
-            pointer-events: none;
-          }
-
           .story-grid {
-            display: block !important;
-            gap: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: clamp(28px, 6vw, 40px) !important;
           }
 
-          /* Image: fill the entire section as background */
-          .story-img-col {
-            position: absolute !important;
-            inset: 0 !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            aspect-ratio: unset !important;
-            z-index: 1;
-          }
-          .story-img-col > div:first-child {
-            inset: -15% 0 !important; /* extra tall for parallax travel */
+          /* Video: constrained portrait card, centered */
+          .story-video-col {
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
+            max-height: 52svh;
+            border-radius: 18px;
           }
 
-          /* Quote badge: hidden on mobile (text already over image) */
-          .story-quote-badge { display: none !important; }
+          /* Quote badge hidden on mobile — keeps card clean */
+          .story-quote-badge { display: none; }
 
-          /* Text column: sits above gradient, anchored to bottom */
-          .story-text-col {
-            position: relative;
-            z-index: 3;
-            padding: 0 var(--gutter) 72px;
-          }
-
-          /* Recolor for dark background */
-          .story-kicker {
-            color: var(--gold-300) !important;
-            margin-bottom: 18px !important;
-          }
-          .story-headline {
-            color: var(--paper-0) !important;
-            font-size: clamp(2.4rem, 9.5vw, 3.5rem) !important;
-            margin-bottom: 20px !important;
-          }
-          .story-body p {
-            color: rgba(253,251,247,0.78) !important;
-            max-width: none !important;
-          }
-          .story-body .story-tag {
-            background: rgba(253,251,247,0.10) !important;
-            color: var(--paper-0) !important;
-            border-color: rgba(253,251,247,0.22) !important;
-          }
-          .story-body a {
-            background: rgba(163,106,94,0.85) !important;
-            backdrop-filter: blur(8px) !important;
-          }
+          .story-text-col { padding: 0; }
         }
       `}</style>
 
@@ -259,50 +204,33 @@ export default function StorySection() {
         className="story-section"
         aria-label="Unsere Geschichte & Positionierung"
       >
-        {/* Dark gradient (mobile-only) */}
-        <div className="story-mob-gradient" aria-hidden="true" />
-
         {/* Desktop background wash */}
         <div className="story-desk-wash" aria-hidden="true" />
 
         <div className="tf-inner story-grid" style={{ position: "relative" }}>
 
-          {/* ── Image column ── */}
-          <div
-            className="story-img-col"
-            ref={imgWrapRef}
-            style={{
-              position: "relative",
-              borderRadius: "var(--r-xl)",
-              overflow: "hidden",
-              aspectRatio: "3/4",
-              boxShadow: "var(--shadow-lg)",
-            }}
-          >
-            <div ref={imgRef} style={{ position: "absolute", inset: "-10% 0", willChange: "transform" }}>
-              <Image
-                src="/anni3.webp"
-                alt="Anni bei der Arbeit — florale Gestaltung für eine Hochzeit"
-                fill
-                sizes="(max-width: 767px) 100vw, 50vw"
-                style={{ objectFit: "cover", objectPosition: "center 20%" }}
-              />
-            </div>
+          {/* ── Reel video column ── */}
+          <div ref={videoColRef} className="story-video-col">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+            >
+              <source src="/anni.mp4" type="video/mp4" />
+            </video>
+
+            {/* Subtle bottom gradient for badge legibility */}
             <div aria-hidden="true" style={{
               position: "absolute", inset: 0,
-              background: "linear-gradient(to top, rgba(26,14,8,0.42) 0%, transparent 52%)",
+              background: "linear-gradient(to top, rgba(26,14,8,0.52) 0%, transparent 45%)",
+              pointerEvents: "none",
             }} />
 
-            {/* Quote badge (hidden on mobile via CSS) */}
-            <div className="story-quote-badge" style={{
-              position: "absolute", bottom: 28, left: 20, right: 20,
-              background: "rgba(253,251,247,0.93)",
-              backdropFilter: "blur(14px)",
-              borderRadius: "var(--r-md)",
-              border: "1px solid var(--paper-300)",
-              padding: "16px 20px",
-              boxShadow: "var(--shadow-md)",
-            }}>
+            {/* Quote badge (desktop only via CSS) */}
+            <div className="story-quote-badge">
               <p style={{
                 fontFamily: "var(--font-script)", fontSize: "1.4rem",
                 color: "var(--rust-600)", lineHeight: 1.2, marginBottom: "6px",
@@ -386,9 +314,10 @@ export default function StorySection() {
                 ))}
               </div>
 
-              <div style={{ paddingTop: "8px" }}>
+              <div style={{ paddingTop: "8px", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
                 <Link
-                  href="/ueber-uns"
+                  href="/anfrage"
+                  className="story-cta-primary"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: "10px",
                     fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 500,
@@ -411,7 +340,33 @@ export default function StorySection() {
                     el.style.gap = "10px";
                   }}
                 >
-                  Meine Geschichte <ArrowRight size={14} strokeWidth={1.8} aria-hidden="true" />
+                  Kostenlos anfragen <ArrowRight size={14} strokeWidth={1.8} aria-hidden="true" />
+                </Link>
+
+                <Link
+                  href="/ueber-uns"
+                  className="story-cta-ghost"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                    fontFamily: "var(--font-sans)", fontSize: "0.78rem", fontWeight: 400,
+                    letterSpacing: "0.12em", textTransform: "uppercase",
+                    color: "var(--rust-600)",
+                    borderBottom: "1px solid var(--rust-200)",
+                    paddingBottom: "2px",
+                    transition: "gap 180ms, color 180ms",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.gap = "14px";
+                    el.style.color = "var(--rust-700)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.gap = "8px";
+                    el.style.color = "var(--rust-600)";
+                  }}
+                >
+                  Meine Geschichte <ArrowRight size={13} strokeWidth={1.8} aria-hidden="true" />
                 </Link>
               </div>
             </div>

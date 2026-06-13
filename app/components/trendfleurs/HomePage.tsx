@@ -6,114 +6,119 @@ import { Kicker, Button, ImagePH, Reveal, Icon } from './primitives';
 import { DecorTile } from './Catalog';
 import { RegionsSection } from './Sections';
 import Scrolly from './Scrolly';
-import { SERVICES, DECOR, ANNI_SRC, imgSrc } from './data';
+import { SERVICES, DECOR, imgSrc } from './data';
 import type { DecorItem, Page } from './data';
 
 /* ─── Hero ─── */
 interface HeroProps { go: (p: Page) => void; }
 
+const HERO_IMGS = [
+  imgSrc(0, 1800),
+  imgSrc(1, 1800),
+  imgSrc(2, 1800),
+  imgSrc(3, 1800),
+  '/anni3.webp',
+];
+
 function Hero({ go }: HeroProps) {
+  const [slide, setSlide] = useState(0);
   const [off, setOff] = useState(0);
+
   useEffect(() => {
     const onScroll = () => setOff(window.scrollY);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => setSlide(s => (s + 1) % HERO_IMGS.length), 4000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <section style={{
       position: 'relative', overflow: 'hidden',
-      padding: 'clamp(56px, 8vw, 110px) 0 clamp(56px, 8vw, 96px)',
+      minHeight: 'clamp(520px, 90vh, 980px)',
+      display: 'flex', alignItems: 'center',
     }}>
-      {/* Background hoop */}
+      {/* Crossfading background images */}
+      {HERO_IMGS.map((src, i) => (
+        <div key={i} style={{
+          position: 'absolute', inset: 0, zIndex: 0,
+          opacity: i === slide ? 1 : 0,
+          transition: 'opacity 1000ms ease-in-out',
+        }}>
+          <Image
+            src={src}
+            alt=""
+            fill
+            style={{ objectFit: 'cover', objectPosition: 'center' }}
+            sizes="100vw"
+            priority={i === 0}
+          />
+        </div>
+      ))}
+
+      {/* Warm dark overlay for readability */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 1,
+        background: 'linear-gradient(160deg, rgba(26,18,12,0.58) 0%, rgba(26,18,12,0.38) 100%)',
+      }} />
+
+      {/* Decorative hoop */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/hoop.svg" alt="" aria-hidden="true" style={{
         position: 'absolute', right: '-80px', top: '40px', width: '460px',
-        opacity: 0.45, pointerEvents: 'none',
+        opacity: 0.12, pointerEvents: 'none', zIndex: 2,
         transform: `translateY(${off * -0.1}px) rotate(${off * 0.008}deg)`,
       }} />
 
-      <div className="tf-inner">
-        <div className="tf-hero-grid">
-          {/* ── Text ── */}
-          <div style={{ position: 'relative', zIndex: 2 }}>
-            <Reveal y={0}>
-              <Kicker>Eventagentur · Floristik · Dekoverleih</Kicker>
-            </Reveal>
-            <Reveal delay={80}>
-              <h1 style={{
-                fontSize: 'var(--fs-display)', marginTop: '20px',
-                lineHeight: 'var(--lh-display)', letterSpacing: 'var(--track-tight)',
-              }}>
-                Dein schönster<br />Tag — gestaltet<br />mit{' '}
-                <em style={{ fontStyle: 'italic', color: 'var(--rust-500)' }}>Liebe</em>.
-              </h1>
-            </Reveal>
-            <Reveal delay={180}>
-              <p style={{ maxWidth: '440px', marginTop: '24px', fontWeight: 300, fontSize: 'var(--fs-lead)', lineHeight: 'var(--lh-body)' }}>
-                Als gelernte Floristin gestalte ich nicht nur Blumen, sondern das ganze Gefühl deines Tages — Hochzeiten, JGA und Events aller Art.
-              </p>
-            </Reveal>
-            <Reveal delay={280}>
-              <div style={{ display: 'flex', gap: '14px', marginTop: '36px', flexWrap: 'wrap' }}>
-                <Button magnetic onClick={() => go('contact')} icon="arrow-up-right">
-                  Unverbindlich anfragen
-                </Button>
-                <Button variant="ghost" onClick={() => go('decor')}>
-                  Zum Dekoverleih
-                </Button>
-              </div>
-            </Reveal>
-          </div>
+      {/* Floating badge */}
+      <div style={{
+        position: 'absolute', bottom: '2rem', right: 'clamp(20px, 5vw, 72px)', zIndex: 3,
+        background: 'rgba(255,255,255,0.96)', borderRadius: 'var(--r-md)',
+        boxShadow: 'var(--shadow-md)', padding: '14px 18px',
+        display: 'flex', alignItems: 'center', gap: '10px',
+      }}>
+        <Icon name="phone-call" size={18} style={{ color: 'var(--rust-500)' }} />
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
+          Audio Gästetelefon
+        </span>
+      </div>
 
-          {/* ── Image stack ── */}
-          <Reveal delay={100} y={40} style={{ position: 'relative', height: '540px' }} className="tf-hero-img">
-            <div style={{ position: 'absolute', inset: 0 }}>
-              {/* Main arch image */}
-              <div style={{
-                position: 'absolute', top: 0, left: '6%', width: '80%', height: '80%',
-                borderRadius: '50% 50% var(--r-lg) var(--r-lg) / 32% 32% var(--r-lg) var(--r-lg)',
-                overflow: 'hidden', boxShadow: 'var(--shadow-lg)',
-                transform: `translateY(${off * 0.04}px)`,
-              }}>
-                <Image
-                  src={imgSrc(2, 900)}
-                  alt="Hochzeitsblumen und florale Dekoration"
-                  fill
-                  style={{ objectFit: 'cover', objectPosition: 'center' }}
-                  sizes="40vw"
-                  priority
-                />
-              </div>
-              {/* Anni portrait */}
-              <div style={{
-                position: 'absolute', bottom: 0, right: 0, width: '46%', height: '42%',
-                borderRadius: 'var(--r-lg)', overflow: 'hidden',
-                boxShadow: 'var(--shadow-md)', border: '5px solid var(--cream)',
-                transform: `translateY(${off * -0.05}px)`,
-              }}>
-                <Image
-                  src={ANNI_SRC}
-                  alt="Anni — Inhaberin & Floristin"
-                  fill
-                  style={{ objectFit: 'cover', objectPosition: 'top center' }}
-                  sizes="20vw"
-                  priority
-                />
-              </div>
-              {/* Floating badge */}
-              <div style={{
-                position: 'absolute', bottom: '20%', left: '-2%',
-                background: 'var(--cream)', borderRadius: 'var(--r-md)',
-                boxShadow: 'var(--shadow-md)', padding: '14px 18px',
-                display: 'flex', alignItems: 'center', gap: '10px',
-                transform: `translateY(${off * -0.09}px)`,
-              }}>
-                <Icon name="phone-call" size={18} style={{ color: 'var(--rust-500)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-                  Audio Gästetelefon
-                </span>
-              </div>
+      {/* Foreground text */}
+      <div className="tf-inner" style={{
+        position: 'relative', zIndex: 3, width: '100%',
+        paddingTop: 'clamp(72px, 10vw, 130px)',
+        paddingBottom: 'clamp(72px, 10vw, 130px)',
+      }}>
+        <div style={{ maxWidth: '600px' }}>
+          <Reveal y={0}>
+            <Kicker color="var(--gold-300)">Eventagentur · Floristik · Dekoverleih</Kicker>
+          </Reveal>
+          <Reveal delay={80}>
+            <h1 style={{
+              fontSize: 'var(--fs-display)', marginTop: '20px',
+              lineHeight: 'var(--lh-display)', letterSpacing: 'var(--track-tight)',
+              color: '#fff',
+            }}>
+              Dein schönster<br />Tag — gestaltet<br />mit{' '}
+              <em style={{ fontStyle: 'italic', color: 'var(--gold-300)' }}>Liebe</em>.
+            </h1>
+          </Reveal>
+          <Reveal delay={180}>
+            <p style={{ maxWidth: '440px', marginTop: '24px', fontWeight: 300, fontSize: 'var(--fs-lead)', lineHeight: 'var(--lh-body)', color: 'rgba(255,255,255,0.85)' }}>
+              Als gelernte Floristin gestalte ich nicht nur Blumen, sondern das ganze Gefühl deines Tages — Hochzeiten, JGA und Events aller Art.
+            </p>
+          </Reveal>
+          <Reveal delay={280}>
+            <div style={{ display: 'flex', gap: '14px', marginTop: '36px', flexWrap: 'wrap' }}>
+              <Button magnetic onClick={() => go('contact')} icon="arrow-up-right">
+                Unverbindlich anfragen
+              </Button>
+              <Button variant="ghost" onClick={() => go('decor')} style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.65)' }}>
+                Zum Dekoverleih
+              </Button>
             </div>
           </Reveal>
         </div>
