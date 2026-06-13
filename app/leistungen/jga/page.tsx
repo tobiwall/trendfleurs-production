@@ -46,7 +46,7 @@ const PAKETE = [
   {
     label: "Beliebt",
     name: "Flower Crown Workshop",
-    price: "ab 49 €",
+    price: "auf Anfrage",
     unit: "/ Person",
     desc: "Jede Teilnehmerin bindet unter Annis Anleitung ihren eigenen floralen Blumenkranz — ein unvergessliches Erlebnis und ein Erinnerungsstück zum Mitnehmen.",
     includes: [
@@ -62,7 +62,7 @@ const PAKETE = [
   {
     label: null,
     name: "JGA Deko-Paket",
-    price: "ab 129 €",
+    price: "auf Anfrage",
     unit: "/ Event",
     desc: "Edle Boho-Dekoration für euren JGA: Pampas-Arrangements, goldene Hoops, Kerzen und Ballonschmuck — aufgebaut und abgebaut von Anni.",
     includes: [
@@ -78,7 +78,7 @@ const PAKETE = [
   {
     label: null,
     name: "Audio Gästetelefon",
-    price: "89 €",
+    price: "auf Anfrage",
     unit: "/ Event",
     desc: "Das beliebteste JGA-Extra: Das Audio Gästetelefon nimmt Sprachnachrichten, Wünsche und lustige Anekdoten auf — ein unvergessliches Geschenk für die Braut.",
     includes: [

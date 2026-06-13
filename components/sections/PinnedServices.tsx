@@ -53,7 +53,7 @@ const BLOCKS = [
     accent: "var(--gold-500)",
     accentBg: "var(--gold-100)",
     numColor: "rgba(212,175,55,0.12)",
-    thumb: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=400&q=75",
+    thumb: "/deko-thumb.webp",
     thumbAlt: "Floraler Goldener Hoop für Hochzeiten und Events",
   },
   {

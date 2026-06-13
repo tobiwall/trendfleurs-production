@@ -17,7 +17,7 @@ const SERVICES = [
     Icon: Flower2,
     accent: "var(--rust-500)",
     accentRgb: "163,106,94",
-    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=900&q=80",
+    img: "/eventfloristik-thumb.webp",
     imgAlt: "Elegante Hochzeitsfloristik — Brautstrauß und Tischdekoration",
   },
   {
@@ -29,7 +29,7 @@ const SERVICES = [
     Icon: Heart,
     accent: "var(--gold-500)",
     accentRgb: "184,150,44",
-    img: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80",
+    img: "/deko-thumb.webp",
     imgAlt: "Goldener Hoop mit Blumen — Dekoverleih für Hochzeiten",
   },
   {
@@ -41,7 +41,7 @@ const SERVICES = [
     Icon: Sparkles,
     accent: "var(--charcoal)",
     accentRgb: "26,26,26",
-    img: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=900&q=80",
+    img: "/fullservice-thumb.webp",
     imgAlt: "Eleganter Hochzeitssaal — ganzheitliche Event-Konzeption",
   },
 ] as const;
